@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Операция Чёрный Одуванчик</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+        :root {
+            --bg: #000000;
+            --card-bg: #1a1a1a;
+            --gold: #c8a96e;
+            --white: #ffffff;
+            --grey: #888888;
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--white);
+            font-family: var(--font-body);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 10;
+        }
+
+        .screen.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-family: var(--font-display);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .title-gold {
+            color: var(--gold);
+        }
+
+        /* Buttons */
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 56px;
+            padding: 12px 24px;
+            border: 2px solid var(--gold);
+            background: transparent;
+            color: var(--gold);
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            letter-spacing: 0.2em;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+            margin-bottom: 12px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn:active {
+            background: var(--gold);
+            color: var(--bg);
+        }
+
+        .btn-secondary {
+            border-color: var(--white);
+            color: var(--white);
+        }
+
+        .btn-secondary:active {
+            background: var(--white);
+            color: var(--bg);
+        }
+
+        .btn-disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* Inputs */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            font-family: var(--font-display);
+            color: var(--grey);
+            margin-bottom: 8px;
+            letter-spacing: 0.1em;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--grey);
+            color: var(--white);
+            padding: 12px;
+            font-size: 1.1rem;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--gold);
+        }
+
+        /* Grid for slot selection */
+        .slot-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .slot-btn {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--card-bg);
+            border: 1px solid var(--grey);
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            color: var(--white);
+            cursor: pointer;
+        }
+
+        .slot-btn.taken {
+            opacity: 0.2;
+            pointer-events: none;
+            background: #333;
+        }
+
+        .slot-btn.selected {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(200, 169, 110, 0.1);
+        }
+
+        /* Lobby List */
+        .player-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .player-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 4px;
+        }
+
+        .player-slot {
+            font-family: var(--font-display);
+            color: var(--gold);
+            width: 30px;
+            font-size: 1.2rem;
+        }
+
+        .player-name {
+            flex-grow: 1;
+            font-weight: bold;
+        }
+
+        .player-role-tag {
+            font-size: 0.7rem;
+            color: var(--grey);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Screen 1: Intro Animations */
+        .intro-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .rain {
+            position: absolute;
+            top: -100px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .drop {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.4);
+            width: 1px;
+            height: 80px;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(110vh); }
+        }
+
+        .skyline {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: auto;
+            fill: #050505;
+        }
+
+        .window {
+            fill: #1a1a1a;
+            animation: blink var(--duration) infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { fill: #1a1a1a; }
+            50% { fill: #c8a96e; }
+        }
+
+        .fog {
+            position: absolute;
+            bottom: 0;
+            left: -100%;
+            width: 200%;
+            height: 30%;
+            background: linear-gradient(to top, rgba(255,255,255,0.05), transparent);
+            animation: drift 20s linear infinite;
+            filter: blur(20px);
+        }
+
+        @keyframes drift {
+            from { transform: translateX(0); }
+            to { transform: translateX(50%); }
+        }
+
+        .intro-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: rgba(0,0,0,0.6);
+            padding: 40px;
+        }
+
+        .intro-operation {
+            font-size: 1.2rem;
+            letter-spacing: 0.3em;
+            margin-bottom: 10px;
+        }
+
+        .intro-title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            line-height: 1;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(0,0,0,0.9), 0 2px 4px rgba(0,0,0,1);
+        }
+
+        .intro-syndicate {
+            color: var(--gold);
+            letter-spacing: 0.2em;
+            margin-bottom: 30px;
+        }
+
+        .intro-quote {
+            font-size: 0.9rem;
+            font-style: italic;
+            letter-spacing: 0.15em;
+            max-width: 80%;
+            margin-bottom: 40px;
+            opacity: 0.8;
+        }
+
+        /* Screen 2: Call UI */
+        .call-screen {
+            background: #000;
+            justify-content: space-between;
+            padding: 60px 40px;
+        }
+
+        .call-info {
+            text-align: center;
+        }
+
+        .call-status {
+            color: var(--grey);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+
+        .call-name {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            letter-spacing: 0.1em;
+        }
+
+        .call-controls {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+        }
+
+        .call-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .call-btn-answer {
+            background: #4cd964;
+            box-shadow: 0 0 20px rgba(76, 217, 100, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        .call-btn-decline {
+            background: #ff3b30;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(76, 217, 100, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(76, 217, 100, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(76, 217, 100, 0); }
+        }
+
+        /* Video Call UI */
+        .video-call-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            height: 60%;
+            margin: 20px 0;
+        }
+
+        .video-window {
+            background: #111;
+            border: 1px solid #333;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .silhouette {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 90%;
+            fill: #050505;
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.02); }
+        }
+
+        .call-timer {
+            text-align: center;
+            font-family: monospace;
+            font-size: 1.2rem;
+            color: var(--grey);
+        }
+
+        /* SMS UI */
+        .sms-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .sms-bubble {
+            background: #262626;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            max-width: 90%;
+            align-self: flex-start;
+            position: relative;
+        }
+
+        .sms-sender {
+            font-size: 0.8rem;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.1em;
+        }
+
+        .sms-text {
+            font-size: clamp(1rem, 4vw, 1.3rem);
+            line-height: 1.4;
+        }
+
+        /* Screen 3: Role Card */
+        .role-card {
+            padding: 0;
+            background: var(--bg);
+        }
+
+        .role-header {
+            padding: 40px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .faction-symbol {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 20px;
+        }
+
+        .role-illustration {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(to bottom, #222, #000);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333;
+        }
+
+        .role-illustration-text {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            color: rgba(255,255,255,0.1);
+            letter-spacing: 0.2em;
+        }
+
+        .role-name {
+            font-size: 4rem;
+            color: var(--gold);
+            margin: 20px 0;
+            line-height: 0.9;
+        }
+
+        .role-desc {
+            padding: 0 30px;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--white);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .team-info-box {
+            background: #1a1a1a;
+            margin: 0 20px;
+            padding: 20px;
+            border-left: 4px solid var(--gold);
+        }
+
+        .team-info-title {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            color: var(--gold);
+            margin-bottom: 10px;
+            letter-spacing: 0.1em;
+        }
+
+        .team-info-content {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .timer-container {
+            margin-top: auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .timer-label {
+            font-size: 0.8rem;
+            color: var(--grey);
+            margin-bottom: 10px;
+            letter-spacing: 0.1em;
+        }
+
+        .timer-circle {
+            width: 60px;
+            height: 60px;
+            position: relative;
+        }
+
+        .timer-svg {
+            transform: rotate(-90deg);
+        }
+
+        .timer-ring-bg {
+            fill: none;
+            stroke: #333;
+            stroke-width: 4;
+        }
+
+        .timer-ring-progress {
+            fill: none;
+            stroke: var(--gold);
+            stroke-width: 4;
+            stroke-dasharray: 176;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear;
+        }
+
+        .timer-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            color: var(--gold);
+        }
+
+        /* Final Screen */
+        .final-screen {
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .final-text {
+            font-size: 3rem;
+            color: var(--gold);
+            letter-spacing: 0.2em;
+        }
+
+        /* Utils */
+        .error-msg {
+            color: #ff3b30;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(200, 169, 110, 0.2);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <!-- SCREEN 0: ENTRY -->
+    <div id="screen-entry" class="screen active">
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+            <h1 style="font-size: 3rem; text-align: center; margin-bottom: 40px;">
+                ЧЁРНЫЙ<br><span class="title-gold">ОДУВАНЧИК</span>
+            </h1>
+            <button class="btn">Создать игру</button>
+            <button class="btn btn-secondary">Войти в игру</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 0.1: HOST SETUP -->
+    <div id="screen-host-setup" class="screen">
+        <h2 class="title-gold" style="margin-bottom: 20px;">Количество игроков</h2>
+        <div class="slot-grid" id="player-count-grid">
+            <!-- 6-12 buttons added via JS -->
+        </div>
+        <div class="input-group">
+            <label class="input-label">Ваше имя</label>
+            <input type="text" id="host-name" placeholder="Введите имя...">
+        </div>
+        <div id="host-setup-error" class="error-msg"></div>
+        <button class="btn" style="margin-top: auto;">Создать сессию</button>
+        <button class="btn btn-secondary">Назад</button>
+    </div>
+
+    <!-- SCREEN 0.2: PLAYER JOIN -->
+    <div id="screen-player-join" class="screen">
+        <h2 class="title-gold" style="margin-bottom: 20px;">Вход в игру</h2>
+        <div class="input-group">
+            <label class="input-label">Код сессии (4 цифры)</label>
+            <input type="number" id="join-code" placeholder="0000" pattern="\d*">
+        </div>
+        <div id="player-join-error" class="error-msg"></div>
+        <button class="btn">Проверить код</button>
+        <button class="btn btn-secondary">Назад</button>
+    </div>
+
+    <!-- SCREEN 0.3: SLOT SELECTION -->
+    <div id="screen-slot-select" class="screen">
+        <h2 class="title-gold" style="margin-bottom: 20px;">Выберите ваш номер</h2>
+        <div class="slot-grid" id="slot-selection-grid">
+            <!-- Slots added via JS -->
+        </div>
+        <div class="input-group">
+            <label class="input-label">Ваше имя</label>
+            <input type="text" id="player-name" placeholder="Введите имя...">
+        </div>
+        <div id="slot-select-error" class="error-msg"></div>
+        <button class="btn" id="join-final-btn">Войти</button>
+        <button class="btn btn-secondary">Назад</button>
+    </div>
+
+    <!-- SCREEN 0.4: LOBBY -->
+    <div id="screen-lobby" class="screen">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div class="input-label">Код сессии</div>
+            <div id="lobby-code" style="font-family: var(--font-display); font-size: 4rem; color: var(--gold); letter-spacing: 0.2em;">0000</div>
+        </div>
+        <h3 style="margin-bottom: 10px; border-bottom: 1px solid var(--gold); padding-bottom: 5px;">Игроки (<span id="lobby-count">0</span>/<span id="lobby-total">0</span>)</h3>
+        <div class="player-list" id="lobby-player-list">
+            <!-- Players list -->
+        </div>
+        <div id="lobby-status-text" style="text-align: center; color: var(--grey); margin-bottom: 20px; font-style: italic;">Ожидание игроков...</div>
+        <button class="btn btn-disabled" id="start-game-btn">Начать игру</button>
+    </div>
+
+    <!-- SCREEN 1: INTRO -->
+    <div id="screen-intro" class="screen" style="padding: 0;">
+        <div class="intro-bg" id="intro-bg">
+            <!-- Rain drops added via JS -->
+            <div class="fog"></div>
+            <svg class="skyline" viewBox="0 0 100 20">
+                <rect x="0" y="15" width="100" height="5" />
+                <rect x="5" y="10" width="10" height="10" />
+                <rect x="20" y="5" width="15" height="15" />
+                <rect x="40" y="12" width="8" height="8" />
+                <rect x="55" y="8" width="12" height="12" />
+                <rect x="75" y="3" width="10" height="17" />
+                <rect x="90" y="11" width="5" height="9" />
+                <!-- Windows -->
+                <rect class="window" x="7" y="12" width="2" height="2" style="--duration: 3s;" />
+                <rect class="window" x="25" y="7" width="2" height="2" style="--duration: 5s;" />
+                <rect class="window" x="78" y="5" width="2" height="2" style="--duration: 4s;" />
+                <rect class="window" x="82" y="10" width="2" height="2" style="--duration: 6s;" />
+            </svg>
+        </div>
+        <div class="intro-content">
+            <div class="intro-operation">OPERATION</div>
+            <div class="intro-title">BLACK DANDELION</div>
+            <div class="intro-syndicate">СИНДИКАТ МОЛЧАЩИХ</div>
+            <div class="intro-quote">ЭТОТ ГОРОД ПРИНАДЛЕЖИТ НАМ. ВСЕГДА ПРИНАДЛЕЖАЛ.</div>
+            <button class="btn" style="width: auto; padding-left: 40px; padding-right: 40px;">Начать игру</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: CALL -->
+    <div id="screen-call" class="screen call-screen">
+        <div class="call-info">
+            <div class="call-status">Входящий вызов</div>
+            <div class="call-name" id="caller-name">---</div>
+        </div>
+        <div id="call-ui-ringing" style="width: 100%;">
+            <div class="call-controls">
+                <div class="call-btn call-btn-decline">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="white"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" transform="rotate(135 12 12)"/></svg>
+                </div>
+                <div class="call-btn call-btn-answer">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="white"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                </div>
+            </div>
+        </div>
+        <div id="call-ui-video" style="width: 100%; display: none; flex-direction: column; height: 100%;">
+            <div class="video-call-grid">
+                <div class="video-window"><svg class="silhouette" viewBox="0 0 100 100"><path d="M50 20c-10 0-18 8-18 18s8 18 18 18 18-8 18-18-8-18-18-18zm0 40c-15 0-35 8-35 20v10h70v-10c0-12-20-20-35-20z"/></svg></div>
+                <div class="video-window"><svg class="silhouette" viewBox="0 0 100 100" style="animation-delay: 1s;"><path d="M50 20c-10 0-18 8-18 18s8 18 18 18 18-8 18-18-8-18-18-18zm0 40c-15 0-35 8-35 20v10h70v-10c0-12-20-20-35-20z"/></svg></div>
+                <div class="video-window" style="grid-column: span 2;"><svg class="silhouette" viewBox="0 0 100 100" style="animation-delay: 2s;"><path d="M50 20c-10 0-18 8-18 18s8 18 18 18 18-8 18-18-8-18-18-18zm0 40c-15 0-35 8-35 20v10h70v-10c0-12-20-20-35-20z"/></svg></div>
+            </div>
+            <div class="call-timer" id="call-timer">0:00</div>
+        </div>
+    </div>
+
+    <!-- SCREEN 2.1: SMS -->
+    <div id="screen-sms" class="screen">
+        <div class="sms-container">
+            <div class="sms-bubble">
+                <div class="sms-sender" id="sms-sender">---</div>
+                <div class="sms-text" id="sms-text">---</div>
+            </div>
+            <button class="btn">Подробнее о роли</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 3: ROLE CARD -->
+    <div id="screen-role-card" class="screen role-card">
+        <div class="role-header">
+            <div class="faction-symbol" id="faction-symbol">
+                <!-- SVG added via JS -->
+            </div>
+            <div class="role-illustration">
+                <div class="role-illustration-text" id="role-illustration-name">ROLE</div>
+                <!-- // Replace with actual hero image: img src=role_image_url -->
+            </div>
+            <div class="role-name" id="role-card-name">ROLE</div>
+            <div class="role-desc" id="role-card-desc">Description</div>
+        </div>
+        <div class="team-info-box">
+            <div class="team-info-title" id="team-info-title">ТВОЯ КОМАНДА:</div>
+            <div class="team-info-content" id="team-info-content">---</div>
+        </div>
+        <div class="timer-container">
+            <div class="timer-label">КАРТОЧКА ИСЧЕЗНЕТ ЧЕРЕЗ</div>
+            <div class="timer-circle">
+                <svg class="timer-svg" width="60" height="60">
+                    <circle class="timer-ring-bg" cx="30" cy="30" r="28" />
+                    <circle class="timer-ring-progress" id="timer-ring" cx="30" cy="30" r="28" />
+                </svg>
+                <div class="timer-text" id="timer-countdown">30</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FINAL SCREEN -->
+    <div id="screen-final" class="screen final-screen">
+        <div class="final-text">ОПЕРАЦИЯ НАЧАТА</div>
+    </div>
+</div>
+
+<div id="loading" class="loading">
+    <div class="spinner"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+    // --- CONFIGURATION ---
+    const SUPABASE_URL = 'https://fxmcmrcjoeaiecedblzj.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4bWNtcmNqb2VhaWVjZWRibHpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NjE5NDEsImV4cCI6MjA5MDQzNzk0MX0.PcbOQ_ZksvgrpCqB4hhPb87yos-ZzTornTsOQyZKGZw';
+
+    let sb = null;
+    try {
+        if (window.supabase && SUPABASE_URL !== 'INSERT_URL' && SUPABASE_KEY !== 'INSERT_ANON_KEY') {
+            sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } else {
+            console.warn('Supabase credentials not configured or library not loaded. Please replace placeholders.');
+        }
+    } catch (e) {
+        console.error('Supabase initialization error:', e);
+    }
+
+    // --- GAME STATE ---
+    let gameState = {
+        sessionId: null,
+        playerCount: 0,
+        mySlot: null,
+        myName: '',
+        myRole: '',
+        players: [],
+        sessionStatus: 'waiting',
+        rolesJson: []
+    };
+
+    const ROLE_COMPOSITION = {
+        6:  { don: 1, svoy: 2, bandit: 1, agent: 1, sherif: 1 },
+        7:  { don: 1, svoy: 2, bandit: 2, agent: 1, sherif: 1 },
+        8:  { don: 1, svoy: 2, bandit: 3, agent: 1, sherif: 1 },
+        9:  { don: 1, svoy: 3, bandit: 3, agent: 1, sherif: 1 },
+        10: { don: 1, svoy: 3, bandit: 4, agent: 1, sherif: 1 },
+        11: { don: 1, svoy: 3, bandit: 5, agent: 1, sherif: 1 },
+        12: { don: 1, svoy: 3, bandit: 5, agent: 2, sherif: 1 }
+    };
+
+    const ROLE_DETAILS = {
+        'ДОН': {
+            caller: 'Свои',
+            sms: 'Дон. Операция начата. Ждём твоих указаний.',
+            desc: 'Ты знаешь своих. Они не знают тебя. Координируй операцию из тени.',
+            faction: 'syndicate'
+        },
+        'СВОЙ': {
+            caller: 'Дон',
+            sms: 'Приказ получен. Работаем по плану.',
+            desc: 'Ты знаешь братьев по синдикату. Абсолютная лояльность.',
+            faction: 'syndicate'
+        },
+        'БАНДИТ': {
+            caller: 'Дон',
+            sms: 'Задание есть. Подробности при встрече.',
+            desc: 'Ты работаешь вслепую. Никто не знает кто ты. Никто.',
+            faction: 'syndicate'
+        },
+        'ШЕРИФ': {
+            caller: 'Штаб',
+            sms: 'Шериф. Операция начата. Действуй по протоколу.',
+            desc: 'Единственная открытая роль. Все знают кто ты. Наблюдай и действуй.',
+            faction: 'law'
+        },
+        'АГЕНТ': {
+            caller: 'Засекреченный номер',
+            sms: 'Канал защищён. Внедрение подтверждено. Не раскрывайся.',
+            desc: 'Внедрён в синдикат. Завербуй бандита. Не раскрывайся.',
+            faction: 'agent'
+        }
+    };
+
+    // --- UTILS ---
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        const next = document.getElementById('screen-' + id);
+        if (next) {
+            next.classList.add('active');
+        }
+    }
+
+    function goBack(screenId) {
+        showScreen(screenId);
+    }
+
+    function showLoading(show) {
+        document.getElementById('loading').style.display = show ? 'flex' : 'none';
+    }
+
+    function showError(id, msg) {
+        const el = document.getElementById(id);
+        el.innerText = msg;
+        el.style.display = 'block';
+        setTimeout(() => el.style.display = 'none', 3000);
+    }
+
+    // --- AUDIO ---
+    let audioCtx = null;
+    function initAudio() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function playRingtone() {
+        initAudio();
+        const interval = setInterval(() => {
+            if (gameState.callAnswered || gameState.screen !== 'call') {
+                clearInterval(interval);
+                return;
+            }
+            beep(440, 0.1);
+            setTimeout(() => beep(440, 0.1), 200);
+        }, 1500);
+    }
+
+    function playChime() {
+        initAudio();
+        beep(880, 0.2);
+        setTimeout(() => beep(1320, 0.3), 100);
+    }
+
+    function beep(freq, duration) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    // --- HOST FLOW ---
+    function showHostSetup() {
+        const grid = document.getElementById('player-count-grid');
+        grid.innerHTML = '';
+        for (let i = 6; i <= 12; i++) {
+            const btn = document.createElement('div');
+            btn.className = 'slot-btn';
+            btn.innerText = i;
+            grid.appendChild(btn);
+        }
+        showScreen('host-setup');
+    }
+
+    async function createGame() {
+        if (!sb) {
+            showError('host-setup', 'Supabase не настроен. Пожалуйста, введите URL и Ключ.');
+            return;
+        }
+        const name = document.getElementById('host-name').value.trim();
+        if (!gameState.playerCount) return showError('host-setup-error', 'Выберите количество игроков');
+        if (!name) return showError('host-setup-error', 'Введите имя');
+
+        showLoading(true);
+        const code = Math.floor(1000 + Math.random() * 9000).toString();
+        
+        // Generate roles
+        const comp = ROLE_COMPOSITION[gameState.playerCount];
+        let rolesPool = [];
+        for (let i = 0; i < comp.don; i++) rolesPool.push('ДОН');
+        for (let i = 0; i < comp.svoy; i++) rolesPool.push('СВОЙ');
+        for (let i = 0; i < comp.bandit; i++) rolesPool.push('БАНДИТ');
+        for (let i = 0; i < comp.agent; i++) rolesPool.push('АГЕНТ');
+        for (let i = 0; i < comp.sherif; i++) rolesPool.push('ШЕРИФ');
+        
+        rolesPool = rolesPool.sort(() => Math.random() - 0.5);
+        const rolesJson = rolesPool.map((role, idx) => ({ slot: idx + 1, role }));
+
+        const { error } = await sb.from('sessions').insert({
+            id: code,
+            player_count: gameState.playerCount,
+            status: 'waiting',
+            roles_json: rolesJson
+        });
+
+        if (error) {
+            showLoading(false);
+            return showError('host-setup-error', 'Ошибка создания сессии');
+        }
+
+        gameState.sessionId = code;
+        gameState.mySlot = 1;
+        gameState.myName = name;
+        gameState.myRole = rolesJson.find(r => r.slot === 1).role;
+        gameState.rolesJson = rolesJson;
+
+        await joinAsPlayer(code, 1, name, gameState.myRole);
+        setupRealtime(code);
+        showLobby();
+        showLoading(false);
+    }
+
+    // --- PLAYER FLOW ---
+    function showPlayerJoin() {
+        showScreen('player-join');
+    }
+
+    async function validateSession() {
+        if (!sb) {
+            showError('player-join-error', 'Supabase не настроен.');
+            return;
+        }
+        const code = document.getElementById('join-code').value.toString();
+        if (code.length !== 4) return showError('player-join-error', 'Код должен быть из 4 цифр');
+
+        showLoading(true);
+        const { data, error } = await sb.from('sessions').select('*').eq('id', code).single();
+        
+        if (error || !data) {
+            showLoading(false);
+            return showError('player-join-error', 'Сессия не найдена');
+        }
+
+        gameState.sessionId = code;
+        gameState.playerCount = data.player_count;
+        gameState.rolesJson = data.roles_json;
+        
+        await showSlotSelection();
+        showLoading(false);
+    }
+
+    async function showSlotSelection() {
+        if (!sb) return;
+        const { data: players } = await sb.from('players').select('slot').eq('session_id', gameState.sessionId);
+        const takenSlots = players.map(p => p.slot);
+        
+        const grid = document.getElementById('slot-selection-grid');
+        grid.innerHTML = '';
+        for (let i = 1; i <= gameState.playerCount; i++) {
+            const btn = document.createElement('div');
+            btn.className = 'slot-btn' + (takenSlots.includes(i) ? ' taken' : '');
+            btn.innerText = i;
+            grid.appendChild(btn);
+        }
+        showScreen('slot-select');
+    }
+
+    async function joinGame() {
+        if (!sb) {
+            showError('slot-select', 'Supabase не настроен.');
+            return;
+        }
+        const name = document.getElementById('player-name').value.trim();
+        if (!gameState.mySlot) return showError('slot-select-error', 'Выберите номер');
+        if (!name) return showError('slot-select-error', 'Введите имя');
+
+        showLoading(true);
+        const role = gameState.rolesJson.find(r => r.slot === gameState.mySlot).role;
+        gameState.myRole = role;
+        gameState.myName = name;
+
+        const success = await joinAsPlayer(gameState.sessionId, gameState.mySlot, name, role);
+        if (success) {
+            setupRealtime(gameState.sessionId);
+            showLobby();
+        } else {
+            showError('slot-select-error', 'Ошибка входа (возможно номер занят)');
+        }
+        showLoading(false);
+    }
+
+    async function joinAsPlayer(sessionId, slot, name, role) {
+        if (!sb) return false;
+        const { error } = await sb.from('players').insert({
+            session_id: sessionId,
+            slot,
+            name,
+            role
+        });
+        return !error;
+    }
+
+    // --- LOBBY ---
+    async function showLobby() {
+        document.getElementById('lobby-code').innerText = gameState.sessionId;
+        document.getElementById('lobby-total').innerText = gameState.playerCount;
+        showScreen('lobby');
+        await updatePlayerList();
+    }
+
+    async function updatePlayerList() {
+        if (!sb || !gameState.sessionId) return;
+        const { data: players } = await sb.from('players').select('*').eq('session_id', gameState.sessionId).order('slot');
+        gameState.players = players || [];
+        
+        const list = document.getElementById('lobby-player-list');
+        list.innerHTML = '';
+        players.forEach(p => {
+            const item = document.createElement('div');
+            item.className = 'player-item';
+            item.innerHTML = `
+                <div class="player-slot">${p.slot}</div>
+                <div class="player-name">${p.name}</div>
+                <div class="player-role-tag">${p.role === 'ШЕРИФ' ? 'ШЕРИФ' : ''}</div>
+            `;
+            list.appendChild(item);
+        });
+
+        document.getElementById('lobby-count').innerText = players.length;
+        
+        const startBtn = document.getElementById('start-game-btn');
+        if (gameState.mySlot === 1) {
+            startBtn.style.display = 'flex';
+            if (players.length === gameState.playerCount) {
+                startBtn.classList.remove('btn-disabled');
+            } else {
+                startBtn.classList.add('btn-disabled');
+            }
+        } else {
+            startBtn.style.display = 'none';
+        }
+    }
+
+    async function startGame() {
+        if (!sb || gameState.players.length < gameState.playerCount) return;
+        showLoading(true);
+        await sb.from('sessions').update({ status: 'started' }).eq('id', gameState.sessionId);
+        showLoading(false);
+    }
+
+    // --- REALTIME ---
+    function setupRealtime(sessionId) {
+        if (!sb) return;
+        sb.channel('session_updates')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sessions', filter: `id=eq.${sessionId}` }, payload => {
+                if (payload.new.status === 'started') {
+                    startIntro();
+                }
+            })
+            .subscribe();
+
+        sb.channel('player_updates')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'players', filter: `session_id=eq.${sessionId}` }, () => {
+                updatePlayerList();
+            })
+            .subscribe();
+    }
+
+    // --- INTRO SCREEN ---
+    function startIntro() {
+        // Prepare rain
+        const rain = document.getElementById('intro-bg');
+        for (let i = 0; i < 50; i++) {
+            const drop = document.createElement('div');
+            drop.className = 'drop';
+            drop.style.left = Math.random() * 100 + '%';
+            drop.style.animationDuration = (0.5 + Math.random() * 0.5) + 's';
+            drop.style.animationDelay = Math.random() * 2 + 's';
+            drop.style.opacity = 0.1 + Math.random() * 0.3;
+            rain.appendChild(drop);
+        }
+        showScreen('intro');
+    }
+
+    // --- CALL SCREEN ---
+    function goToCall() {
+        const details = ROLE_DETAILS[gameState.myRole];
+        document.getElementById('caller-name').innerText = details.caller;
+        gameState.callAnswered = false;
+        gameState.screen = 'call';
+        
+        document.getElementById('call-ui-ringing').style.display = 'block';
+        document.getElementById('call-ui-video').style.display = 'none';
+        
+        showScreen('call');
+        playRingtone();
+    }
+
+    function answerCall() {
+        gameState.callAnswered = true;
+        document.getElementById('call-ui-ringing').style.display = 'none';
+        document.getElementById('call-ui-video').style.display = 'flex';
+        
+        let sec = 0;
+        const timer = setInterval(() => {
+            sec++;
+            document.getElementById('call-timer').innerText = `0:0${sec}`;
+            if (sec >= 4) {
+                clearInterval(timer);
+                showSms();
+            }
+        }, 1000);
+    }
+
+    function showSms() {
+        const details = ROLE_DETAILS[gameState.myRole];
+        document.getElementById('sms-sender').innerText = details.caller;
+        document.getElementById('sms-text').innerText = details.sms;
+        
+        playChime();
+        showScreen('sms');
+    }
+
+    // --- ROLE CARD ---
+    function goToRoleCard() {
+        const details = ROLE_DETAILS[gameState.myRole];
+        
+        // Faction Symbol
+        const symbol = document.getElementById('faction-symbol');
+        if (details.faction === 'syndicate') {
+            symbol.innerHTML = `<svg viewBox="0 0 100 100" fill="#c8a96e"><path d="M50 90 C20 60 20 40 50 10 C80 40 80 60 50 90 Z"/></svg>`;
+        } else if (details.faction === 'law') {
+            symbol.innerHTML = `<svg viewBox="0 0 100 100" stroke="white" fill="none" stroke-width="5"><path d="M50 10 L61 35 L88 35 L67 52 L75 78 L50 62 L25 78 L33 52 L12 35 L39 35 Z"/></svg>`;
+        } else {
+            symbol.innerHTML = `<svg viewBox="0 0 100 100" stroke="white" fill="none" stroke-width="5"><circle cx="50" cy="50" r="20"/><path d="M10 50 Q50 10 90 50 Q50 90 10 50"/></svg>`;
+        }
+
+        document.getElementById('role-illustration-name').innerText = gameState.myRole;
+        document.getElementById('role-card-name').innerText = gameState.myRole;
+        document.getElementById('role-card-desc').innerText = details.desc;
+
+        // Team Info
+        const infoTitle = document.getElementById('team-info-title');
+        const infoContent = document.getElementById('team-info-content');
+        
+        if (gameState.myRole === 'ДОН') {
+            infoTitle.innerText = 'ТВОИ ЛЮДИ:';
+            const svoyi = gameState.players.filter(p => p.role === 'СВОЙ');
+            infoContent.innerText = svoyi.map(p => `${p.slot}. ${p.name}`).join('\n');
+        } else if (gameState.myRole === 'СВОЙ') {
+            infoTitle.innerText = 'ТВОИ БРАТЬЯ:';
+            const brothers = gameState.players.filter(p => p.role === 'СВОЙ' && p.slot !== gameState.mySlot);
+            infoContent.innerText = brothers.length > 0 ? brothers.map(p => `${p.slot}. ${p.name}`).join('\n') : 'ТЫ ОДИН';
+        } else if (gameState.myRole === 'ШЕРИФ') {
+            infoTitle.innerText = 'ОТКРЫТАЯ РОЛЬ:';
+            infoContent.innerText = 'Все игроки знают, что ты Шериф.';
+        } else if (gameState.myRole === 'БАНДИТ') {
+            infoTitle.innerText = 'ТВОЯ КОМАНДА:';
+            infoContent.innerText = 'НЕИЗВЕСТНА';
+        } else {
+            infoTitle.innerText = 'ТВОИ СОЮЗНИКИ:';
+            infoContent.innerText = 'ЗАСЕКРЕЧЕНО';
+        }
+
+        showScreen('role-card');
+        startSelfDestruct();
+    }
+
+    function startSelfDestruct() {
+        let timeLeft = 30;
+        const ring = document.getElementById('timer-ring');
+        const text = document.getElementById('timer-countdown');
+        
+        const timer = setInterval(() => {
+            timeLeft--;
+            text.innerText = timeLeft;
+            
+            const offset = 176 - (timeLeft / 30) * 176;
+            ring.style.strokeDashoffset = offset;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                showScreen('final');
+            }
+        }, 1000);
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        // Screen Entry
+        const entryBtns = document.querySelectorAll('#screen-entry .btn');
+        if (entryBtns[0]) entryBtns[0].addEventListener('click', showHostSetup);
+        if (entryBtns[1]) entryBtns[1].addEventListener('click', showPlayerJoin);
+        
+        // Host Setup Screen
+        const hostBtns = document.querySelectorAll('#screen-host-setup .btn');
+        if (hostBtns[0]) hostBtns[0].addEventListener('click', createGame);
+        if (hostBtns[1]) hostBtns[1].addEventListener('click', () => goBack('entry'));
+        
+        // Player Join Screen
+        const joinBtns = document.querySelectorAll('#screen-player-join .btn');
+        if (joinBtns[0]) joinBtns[0].addEventListener('click', validateSession);
+        if (joinBtns[1]) joinBtns[1].addEventListener('click', () => goBack('entry'));
+        
+        // Slot Selection Screen
+        const slotJoinBtn = document.getElementById('join-final-btn');
+        if (slotJoinBtn) slotJoinBtn.addEventListener('click', joinGame);
+        
+        const slotBackBtns = document.querySelectorAll('#screen-slot-select .btn');
+        // The last button in slot select is usually the back button
+        const slotBackBtn = Array.from(slotBackBtns).find(b => b.innerText.includes('Назад'));
+        if (slotBackBtn) slotBackBtn.addEventListener('click', () => goBack('player-join'));
+        
+        // Lobby Screen
+        const lobbyStartBtn = document.getElementById('start-game-btn');
+        if (lobbyStartBtn) lobbyStartBtn.addEventListener('click', startGame);
+        
+        // Intro Screen
+        const introStartBtn = document.querySelector('#screen-intro .btn');
+        if (introStartBtn) introStartBtn.addEventListener('click', goToCall);
+
+        // Call Screen
+        const callAnswerBtn = document.querySelector('.call-btn-answer');
+        if (callAnswerBtn) callAnswerBtn.addEventListener('click', answerCall);
+
+        // SMS Screen
+        const smsRoleBtn = document.querySelector('#screen-sms .btn');
+        if (smsRoleBtn) smsRoleBtn.addEventListener('click', goToRoleCard);
+
+        // Event Delegation for Player Count Grid
+        const playerCountGrid = document.getElementById('player-count-grid');
+        if (playerCountGrid) {
+            playerCountGrid.addEventListener('click', (e) => {
+                const btn = e.target.closest('.slot-btn');
+                if (btn) {
+                    const count = parseInt(btn.innerText);
+                    document.querySelectorAll('#player-count-grid .slot-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    gameState.playerCount = count;
+                }
+            });
+        }
+
+        // Event Delegation for Slot Selection Grid
+        const slotSelectionGrid = document.getElementById('slot-selection-grid');
+        if (slotSelectionGrid) {
+            slotSelectionGrid.addEventListener('click', (e) => {
+                const btn = e.target.closest('.slot-btn');
+                if (btn && !btn.classList.contains('taken')) {
+                    const slot = parseInt(btn.innerText);
+                    document.querySelectorAll('#slot-selection-grid .slot-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    gameState.mySlot = slot;
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>
