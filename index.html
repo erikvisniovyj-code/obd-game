@@ -1372,17 +1372,6 @@ function calcScoring() {
     document.getElementById('btn-finish-game').style.display = 'flex';
     document.getElementById('sc-result-box').scrollIntoView({ behavior:'smooth' });
 }
-    const bar = document.getElementById(barId);
-    if (!bar || revealedRoles.length === 0) return;
-    bar.innerHTML = '<span style="font-size:0.68rem;color:#555;font-family:var(--font-display);letter-spacing:0.08em;margin-right:4px;">ВСКРЫТО:</span>';
-    revealedRoles.forEach(r => {
-        const chip = document.createElement('div');
-        chip.className = 'revealed-chip ' + (r.type === 'sheriff' ? 'sheriff' : r.type === 'law' ? 'law' : 'syndicate');
-        chip.textContent = `${r.slot}. ${r.name} — ${r.displayRole || r.role}`;
-        bar.appendChild(chip);
-    });
-    bar.style.display = 'flex';
-}
 
 async function finishGame() {
     if (!sb || !state.sessionId) { showScreen('entry'); return; }
