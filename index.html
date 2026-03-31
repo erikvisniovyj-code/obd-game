@@ -358,6 +358,7 @@ function getSms(role, name) {
 function getCard(role) {
     return {
         'ДОН': {
+            callerImages: ['img/svoy1.jpg', 'img/svoy2.jpg', 'img/svoy3.jpg'],
             caller:'Свои', faction:'syndicate',
             desc:'Координируешь операцию из тени. Все думают что ты обычный участник — никто не знает кто ты на самом деле.',
             teamTitle:'ТВОИ ЛЮДИ', teamDynamic:true,
@@ -366,6 +367,7 @@ function getCard(role) {
             warnTitle:'КОНСПИРАЦИЯ', warn:'Роль скрытая. Притворяйся обычным участником. Если Шериф тебя вычислит — это меняет весь ход игры.'
         },
         'СВОЙ': {
+            callerImages: ['img/don.jpg', 'img/don.jpg', 'img/don.jpg'],
             caller:'Дон', faction:'syndicate',
             desc:'Абсолютная лояльность Синдикату. Тебя не сломить ни уговорами, ни угрозами. Ты видишь братьев, но не знаешь кто из них Дон.',
             teamTitle:'ТВОИ БРАТЬЯ', teamDynamic:true,
@@ -374,6 +376,7 @@ function getCard(role) {
             warnTitle:'АБСОЛЮТНАЯ ЛОЯЛЬНОСТЬ', warn:'Только Успех Мафии на диске. Никогда не выставляй другое действие. Вербовка тебя невозможна.'
         },
         'БАНДИТ': {
+            callerImages: ['img/don.jpg', 'img/don.jpg', 'img/don.jpg'],
             caller:'Дон', faction:'syndicate',
             desc:'Работаешь вслепую. Не знаешь никого — ни других Бандитов, ни Своих, ни Дона.',
             teamTitle:'ТВОЯ КОМАНДА', teamDynamic:false, teamStatic:'НЕИЗВЕСТНА\nНикто не знает кто ты. Никто.',
@@ -382,6 +385,7 @@ function getCard(role) {
             warnTitle:'ВОЗМОЖНАЯ ВЕРБОВКА', warn:'Получил жетон вербовки — ты работаешь на Агента. Меняй диск. Притворяйся что лоялен Дону.'
         },
         'ШЕРИФ': {
+            callerImages: ['img/mayor.jpg', 'img/mayor.jpg', 'img/mayor.jpg'],
             caller:'Штаб', faction:'law',
             desc:'Единственная открытая роль. Все знают кто ты. Наблюдай, арестовывай, проводи облавы — но не ошибись.',
             teamTitle:'ОТКРЫТАЯ РОЛЬ', teamDynamic:false, teamStatic:'Все игроки знают что ты Шериф.\nТвой союзник — Агент (но ты не знаешь кто он).',
@@ -390,6 +394,7 @@ function getCard(role) {
             warnTitle:'ПРОДАЖНЫЙ ПОЛИЦЕЙСКИЙ', warn:'5 неверных арестов = продажный коп. Тогда все твои облавы идут в зачёт Мафии. Будь внимателен!'
         },
         'АГЕНТ': {
+            callerImages: ['img/unknown.jpg', 'img/unknown.jpg', 'img/unknown.jpg'],
             caller:'Засекреченный номер', faction:'agent',
             desc:'Внедрён в Синдикат. Начинаешь игру один. Твоя задача — завербовать Бандитов и парализовать Мафию.',
             teamTitle:'ТВОИ СОЮЗНИКИ', teamDynamic:false, teamStatic:'ЗАСЕКРЕЧЕНО\nНачинаешь один. Завербованные Бандиты — твои агенты.',
@@ -594,6 +599,17 @@ function startIntro() {
 function onGoToCall() {
     const card = getCard(state.myRole); if(!card) return;
     document.getElementById('caller-name').textContent = card.caller;
+
+    // Вставляем фото звонящих в окна видеосвязи
+    const imgs = card.callerImages || [];
+    document.querySelectorAll('.video-window').forEach((win, i) => {
+        if (imgs[i]) {
+            win.innerHTML = `<img src="${imgs[i]}" style="width:100%;height:100%;object-fit:cover;filter:grayscale(40%) contrast(1.1);">`;
+        } else {
+            win.innerHTML = `<svg class="silhouette" viewBox="0 0 100 100"><path d="M50 20c-10 0-18 8-18 18s8 18 18 18 18-8 18-18-8-18-18-18zm0 40c-15 0-35 8-35 20v10h70v-10c0-12-20-20-35-20z"/></svg>`;
+        }
+    });
+
     document.getElementById('call-ui-ringing').style.display='block';
     document.getElementById('call-ui-video').style.display='none';
     showScreen('call'); startRing();
