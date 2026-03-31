@@ -364,7 +364,7 @@ function getCard(role) {
             warnTitle:'КОНСПИРАЦИЯ', warn:'Роль скрытая. Притворяйся обычным участником. Если Шериф тебя вычислит — это меняет весь ход игры.'
         },
         'СВОЙ': {
-            callerImages: ['img/don.jpg', 'img/don.jpg', 'img/don.jpg'],
+            callerImages: ['img/don.jpg'],
             caller:'Дон', faction:'syndicate',
             desc:'Абсолютная лояльность Синдикату. Тебя не сломить ни уговорами, ни угрозами. Ты видишь братьев, но не знаешь кто из них Дон.',
             teamTitle:'ТВОИ БРАТЬЯ', teamDynamic:true,
@@ -373,7 +373,7 @@ function getCard(role) {
             warnTitle:'АБСОЛЮТНАЯ ЛОЯЛЬНОСТЬ', warn:'Только Успех Мафии на диске. Никогда не выставляй другое действие. Вербовка тебя невозможна.'
         },
         'БАНДИТ': {
-            callerImages: ['img/don.jpg', 'img/don.jpg', 'img/don.jpg'],
+            callerImages: ['img/don.jpg'],
             caller:'Дон', faction:'syndicate',
             desc:'Работаешь вслепую. Не знаешь никого — ни других Бандитов, ни Своих, ни Дона.',
             teamTitle:'ТВОЯ КОМАНДА', teamDynamic:false, teamStatic:'НЕИЗВЕСТНА\nНикто не знает кто ты. Никто.',
@@ -382,7 +382,7 @@ function getCard(role) {
             warnTitle:'ВОЗМОЖНАЯ ВЕРБОВКА', warn:'Получил жетон вербовки — ты работаешь на Агента. Меняй диск. Притворяйся что лоялен Дону.'
         },
         'ШЕРИФ': {
-            callerImages: ['img/mayor.jpg', 'img/mayor.jpg', 'img/mayor.jpg'],
+            callerImages: ['img/mayor.jpg'],
             caller:'Штаб', faction:'law',
             desc:'Единственная открытая роль. Все знают кто ты. Наблюдай, арестовывай, проводи облавы — но не ошибись.',
             teamTitle:'ОТКРЫТАЯ РОЛЬ', teamDynamic:false, teamStatic:'Все игроки знают что ты Шериф.\nТвой союзник — Агент (но ты не знаешь кто он).',
@@ -391,7 +391,7 @@ function getCard(role) {
             warnTitle:'ПРОДАЖНЫЙ ПОЛИЦЕЙСКИЙ', warn:'5 неверных арестов = продажный коп. Тогда все твои облавы идут в зачёт Мафии. Будь внимателен!'
         },
         'АГЕНТ': {
-            callerImages: ['img/unknown.jpg', 'img/unknown.jpg', 'img/unknown.jpg'],
+            callerImages: ['img/unknown.jpg'],
             caller:'Засекреченный номер', faction:'agent',
             desc:'Внедрён в Синдикат. Начинаешь игру один. Твоя задача — завербовать Бандитов и парализовать Мафию.',
             teamTitle:'ТВОИ СОЮЗНИКИ', teamDynamic:false, teamStatic:'ЗАСЕКРЕЧЕНО\nНачинаешь один. Завербованные Бандиты — твои агенты.',
