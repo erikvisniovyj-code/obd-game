@@ -120,23 +120,41 @@
         .final-text { font-family: var(--font-display); font-size: 3rem; color: var(--gold); letter-spacing: 0.2em; }
 
         /* Scoring */
-        .loc-block { background:#0e0e0e; border:1px solid #222; margin-bottom:14px; border-radius:2px; }
-        .loc-header { background:#161616; padding:10px 14px; font-family:var(--font-display); font-size:1.05rem; color:var(--gold); letter-spacing:0.1em; border-bottom:1px solid #222; }
-        .loc-sub { font-size:0.72rem; color:var(--grey); display:block; letter-spacing:0.05em; margin-top:2px; font-family:var(--font-body); font-weight:normal; }
-        .loc-body { padding:12px 14px; display:flex; flex-direction:column; gap:12px; }
-        .loc-row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-        .loc-label { font-size:0.82rem; color:rgba(255,255,255,0.78); flex:1; line-height:1.35; }
-        .loc-input { width:65px; text-align:center; font-size:1.1rem; padding:7px 4px; flex-shrink:0; }
-        .loc-section-label { font-size:0.75rem; color:var(--gold); letter-spacing:0.08em; font-family:var(--font-display); margin-bottom:6px; }
+        .loc-block { background:#0a0a0a; border:1px solid #1e1e1e; margin-bottom:16px; border-radius:3px; overflow:hidden; }
+        .loc-header { background:#141414; padding:10px 14px; font-family:var(--font-display); font-size:1.1rem; color:var(--gold); letter-spacing:0.1em; border-bottom:1px solid #1e1e1e; }
+        .loc-sub { font-size:0.7rem; color:var(--grey); display:block; letter-spacing:0.04em; margin-top:3px; font-family:var(--font-body); font-weight:normal; line-height:1.4; }
+        .loc-body { padding:14px; display:flex; flex-direction:column; gap:14px; }
+        .loc-section-label { font-size:0.72rem; color:var(--gold); letter-spacing:0.1em; font-family:var(--font-display); margin-bottom:8px; }
+        /* Bullet tokens */
+        .bullet-row { display:flex; flex-wrap:wrap; gap:5px; }
+        .bullet-token { width:22px; height:42px; background:#161616; border:1.5px solid #2a2a2a; border-radius:11px 11px 3px 3px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:4px; cursor:pointer; font-size:0.6rem; font-family:monospace; color:#444; transition:all 0.1s; position:relative; flex-shrink:0; }
+        .bullet-token::before { content:''; position:absolute; top:0; left:0; right:0; height:52%; border-radius:50%; background:inherit; filter:brightness(1.2); }
+        .bullet-token.mafia-on { background:#5a1515; border-color:#c0392b; color:#ff7070; }
+        .bullet-token.agent-on { background:#0d3318; border-color:#27ae60; color:#4cd964; }
+        .bullet-token span { position:relative; z-index:1; }
+        /* Raid badges — star-clip pentagon */
+        .raid-row { display:flex; gap:10px; }
+        .raid-badge { width:46px; height:46px; clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%); background:#1a1a1a; display:flex; align-items:center; justify-content:center; cursor:pointer; font-family:var(--font-display); font-size:0.75rem; color:#444; letter-spacing:0.04em; transition:all 0.1s; }
+        .raid-badge.used { background:#1f1600; color:var(--gold); }
+        /* Arrest buttons */
         .tap-grid { display:flex; flex-wrap:wrap; gap:7px; }
-        .tap-btn { width:40px; height:40px; display:flex; align-items:center; justify-content:center; background:#1a1a1a; border:1px solid #333; font-family:var(--font-display); font-size:1.1rem; color:#888; cursor:pointer; border-radius:2px; flex-shrink:0; transition:all 0.15s; }
-        .tap-btn.selected { border-color:var(--gold); color:var(--gold); background:rgba(200,169,110,0.12); }
-        .tap-btn.selected-agent { border-color:#4cd964; color:#4cd964; background:rgba(76,217,100,0.1); }
-        .tap-btn.villa-max { opacity:0.3; pointer-events:none; }
-        .loc-result-line { font-size:0.82rem; padding:8px 14px; border-top:1px solid #1e1e1e; color:#4cd964; display:none; }
+        .tap-btn { width:42px; height:42px; display:flex; align-items:center; justify-content:center; background:#141414; border:1px solid #2a2a2a; font-family:var(--font-display); font-size:1.1rem; color:#666; cursor:pointer; border-radius:3px; flex-shrink:0; transition:all 0.12s; position:relative; }
+        .tap-btn.selected { border-color:var(--gold); color:var(--gold); background:rgba(200,169,110,0.1); }
+        .tap-btn.selected-agent { border-color:#4cd964; color:#4cd964; background:rgba(76,217,100,0.08); }
+        .tap-btn.villa-max { opacity:0.25; pointer-events:none; }
+        .arrest-badge { position:absolute; top:-5px; right:-5px; min-width:16px; height:16px; border-radius:8px; background:#c0392b; color:#fff; font-size:0.6rem; font-family:monospace; font-weight:bold; display:flex; align-items:center; justify-content:center; padding:0 2px; }
+        /* Revealed roles bar */
+        .revealed-bar { background:#0d0d0d; border-bottom:1px solid #1a1a1a; padding:8px 14px; display:flex; flex-wrap:wrap; gap:6px; }
+        .revealed-chip { padding:3px 8px; border-radius:2px; font-size:0.7rem; letter-spacing:0.06em; font-family:var(--font-display); }
+        .revealed-chip.syndicate { background:rgba(160,30,30,0.2); border:1px solid #5a1515; color:#ff8080; }
+        .revealed-chip.law { background:rgba(76,217,100,0.1); border:1px solid #27ae60; color:#4cd964; }
+        .revealed-chip.sheriff { background:rgba(200,169,110,0.1); border:1px solid var(--gold); color:var(--gold); }
+        /* Per-location result panel */
+        .loc-result-panel { background:#0d0d0d; border-top:1px solid #1e1e1e; padding:12px 14px; font-size:0.82rem; line-height:1.65; display:none; white-space:pre-line; }
+        .loc-result-panel .control-line { font-family:var(--font-display); font-size:1.05rem; letter-spacing:0.08em; margin-top:8px; }
         /* Test mode */
-        .test-btn { position:fixed; bottom:12px; right:12px; width:36px; height:36px; background:#111; border:1px solid #2a2a2a; color:#444; font-size:0.7rem; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:500; border-radius:4px; font-family:monospace; }
-        .test-btn:active { background:#222; }
+        .test-btn { position:fixed; bottom:12px; right:12px; width:34px; height:34px; background:#0d0d0d; border:1px solid #1e1e1e; color:#333; font-size:0.65rem; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:500; border-radius:3px; font-family:monospace; }
+        .test-btn:active { background:#1a1a1a; }
         .error-msg { color: #ff3b30; font-size: 0.85rem; margin-bottom: 10px; text-align: center; min-height: 20px; line-height: 1.4; }
         .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .spinner { width: 40px; height: 40px; border: 4px solid rgba(200,169,110,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
@@ -774,36 +792,295 @@ function startTimer() {
 }
 
 // ============================================================
-// SCORING — strictly per OBD Rulebook v3 Final
+// SCORING — OBD Rulebook v3 Final (fully rule-compliant)
 // ============================================================
 
-// Location data from rulebook v3
 const LOCATIONS = [
-    { id:1, name:'СКЛАД',       available:8,  players:'2–3',   mafiaMin:1, agentMin:4,  note:'Мафия +1 / Агент +4' },
-    { id:2, name:'АЭРОПОРТ',    available:6,  players:'4 или 7+', mafiaMin:1, agentMin:3, note:'4 чел.: Мафия +1/Агент +3 | 7+ чел.: Мафия +2/Агент +4', noShoot:true },
-    { id:3, name:'ГОРОД',       available:10, players:'5–6 или 7+', mafiaMin:1, agentMin:1, note:'5–6 чел.: оба +1 | 7+ чел.: оба +2' },
-    { id:4, name:'ПОРТ',        available:4,  players:'5–6',   mafiaMin:2, agentMin:1,  note:'Мафия +2 / Агент +1' },
-    { id:5, name:'ВИЛЛА ДОНА',  available:0,  isVilla:true,    note:'Перестрелка пальцем. 3 выживших × 2 гильзы своей команде.' }
+    { id:1, name:'СКЛАД',    available:8,  players:'2–3',      mafiaMin:1, agentMin:4, note:'Мафия +1 / Агент +4' },
+    { id:2, name:'АЭРОПОРТ', available:6,  players:'4 или 7+', mafiaMin:1, agentMin:3, note:'4 чел.: М+1/А+3 | 7+ чел.: М+2/А+4', noShoot:true },
+    { id:3, name:'ГОРОД',    available:10, players:'5–6 или 7+',mafiaMin:1, agentMin:1, note:'5–6 чел.: оба +1 | 7+ чел.: оба +2' },
+    { id:4, name:'ПОРТ',     available:4,  players:'5–6',      mafiaMin:2, agentMin:1, note:'Мафия +2 / Агент +1' },
+    { id:5, name:'ВИЛЛА ДОНА', isVilla:true, note:'Перестрелка пальцем. 3 выживших × 2 гильзы своей команде.' }
 ];
 
-// Per-location scoring state (built fresh each time)
+// Per-location state
 let sc = {};
+let revealedRoles = []; // builds up as admin checks each location
 
 function initScoringState() {
     sc = {};
     for (let i = 1; i <= 4; i++) {
-        sc[i] = { mafia:0, agent:0, raids:0, arrested:new Set(), recruited:new Set() };
+        sc[i] = { mafia:0, agent:0, raids:0, arrested:{}, recruited:new Set() };
+        // arrested = { slot: count }  (can arrest same player multiple times)
     }
-    sc[5] = { villa:new Set() }; // max 3 players
+    sc[5] = { villa: new Set() };
+    // Seed revealed roles with Sheriff (always public)
+    revealedRoles = [];
+    const sheriff = state.players.find(p => p.role === 'ШЕРИФ');
+    if (sheriff) revealedRoles.push({ slot:sheriff.slot, name:sheriff.name, role:'ШЕРИФ', type:'sheriff' });
 }
 
+// ─── Build bullet row ───────────────────────────────────────
+function buildBulletRow(container, max, team, locId) {
+    container.innerHTML = '';
+    for (let i = 1; i <= max; i++) {
+        const tok = document.createElement('div');
+        tok.className = 'bullet-token';
+        tok.dataset.val = i;
+        tok.innerHTML = `<span>${i}</span>`;
+        tok.addEventListener('click', () => {
+            const cur = sc[locId][team];
+            sc[locId][team] = (cur === i) ? 0 : i;
+            updateBulletRow(container, sc[locId][team], team);
+        });
+        container.appendChild(tok);
+    }
+}
+
+function updateBulletRow(container, val, team) {
+    container.querySelectorAll('.bullet-token').forEach(tok => {
+        const n = parseInt(tok.dataset.val);
+        tok.classList.toggle(`${team}-on`, n <= val);
+    });
+}
+
+// ─── Build raid badges ──────────────────────────────────────
+function buildRaidRow(container, locId) {
+    container.innerHTML = '';
+    for (let i = 1; i <= 3; i++) {
+        const badge = document.createElement('div');
+        badge.className = 'raid-badge';
+        badge.dataset.idx = i;
+        badge.textContent = 'RAID';
+        badge.addEventListener('click', () => {
+            const cur = sc[locId].raids;
+            sc[locId].raids = (cur === i) ? i - 1 : i;
+            updateRaidRow(container, sc[locId].raids);
+        });
+        container.appendChild(badge);
+    }
+}
+
+function updateRaidRow(container, val) {
+    container.querySelectorAll('.raid-badge').forEach(b => {
+        b.classList.toggle('used', parseInt(b.dataset.idx) <= val);
+    });
+}
+
+// ─── Build arrest grid ──────────────────────────────────────
+function buildArrestGrid(container, locId) {
+    container.innerHTML = '';
+    state.players.forEach(p => {
+        const btn = document.createElement('div');
+        btn.className = 'tap-btn';
+        btn.id = `arrest-${locId}-${p.slot}`;
+        btn.innerHTML = `${p.slot}`;
+        btn.title = p.name;
+        btn.addEventListener('click', () => {
+            const cur = sc[locId].arrested[p.slot] || 0;
+            const next = (cur >= 3) ? 0 : cur + 1;
+            sc[locId].arrested[p.slot] = next;
+            // Update badge
+            let badge = btn.querySelector('.arrest-badge');
+            if (next === 0) {
+                btn.classList.remove('selected');
+                if (badge) badge.remove();
+            } else {
+                btn.classList.add('selected');
+                if (!badge) { badge = document.createElement('div'); badge.className = 'arrest-badge'; btn.appendChild(badge); }
+                badge.textContent = next;
+            }
+        });
+        container.appendChild(btn);
+    });
+}
+
+// ─── Build recruit grid (no Agent or Sheriff) ───────────────
+function buildRecruitGrid(container, locId) {
+    container.innerHTML = '';
+    const eligible = state.players.filter(p => p.role !== 'АГЕНТ' && p.role !== 'ШЕРИФ');
+    if (eligible.length === 0) {
+        container.innerHTML = '<span style="font-size:0.75rem;color:#555;">Нет подходящих игроков</span>';
+        return;
+    }
+    eligible.forEach(p => {
+        const btn = document.createElement('div');
+        btn.className = 'tap-btn';
+        btn.textContent = p.slot;
+        btn.title = p.name;
+        btn.addEventListener('click', () => {
+            if (sc[locId].recruited.has(p.slot)) {
+                sc[locId].recruited.delete(p.slot);
+                btn.classList.remove('selected', 'selected-agent');
+            } else {
+                sc[locId].recruited.add(p.slot);
+                // Green = Бандит (will succeed), Gold = Свой/Дон (will fail)
+                btn.classList.add(p.role === 'БАНДИТ' ? 'selected-agent' : 'selected');
+            }
+        });
+        container.appendChild(btn);
+    });
+}
+
+// ─── Villa grid ─────────────────────────────────────────────
+function buildVillaGrid(container) {
+    container.innerHTML = '';
+    state.players.forEach(p => {
+        const btn = document.createElement('div');
+        btn.className = 'tap-btn';
+        btn.textContent = p.slot;
+        btn.title = p.name;
+        btn.addEventListener('click', () => {
+            if (sc[5].villa.has(p.slot)) {
+                sc[5].villa.delete(p.slot);
+                btn.classList.remove('selected-agent');
+                document.querySelectorAll('#loc5-villa-grid .tap-btn').forEach(b => b.classList.remove('villa-max'));
+            } else {
+                if (sc[5].villa.size >= 3) return;
+                sc[5].villa.add(p.slot);
+                btn.classList.add('selected-agent');
+                if (sc[5].villa.size >= 3) {
+                    document.querySelectorAll('#loc5-villa-grid .tap-btn:not(.selected-agent)').forEach(b => b.classList.add('villa-max'));
+                }
+            }
+        });
+        container.appendChild(btn);
+    });
+}
+
+// ─── Revealed roles bar ─────────────────────────────────────
+function renderRevealedBar(barId) {
+    const bar = document.getElementById(barId);
+    if (!bar || revealedRoles.length === 0) return;
+    bar.innerHTML = '<span style="font-size:0.68rem;color:#555;font-family:var(--font-display);letter-spacing:0.08em;margin-right:4px;">ВСКРЫТО:</span>';
+    revealedRoles.forEach(r => {
+        const chip = document.createElement('div');
+        chip.className = 'revealed-chip ' + (r.type === 'sheriff' ? 'sheriff' : r.type === 'law' ? 'law' : 'syndicate');
+        chip.textContent = `${r.slot}. ${r.name} — ${r.displayRole || r.role}`;
+        bar.appendChild(chip);
+    });
+    bar.style.display = 'flex';
+}
+
+// ─── Per-location check ─────────────────────────────────────
+// Pre-compute all recruited bandits (needed for arrest bribe logic)
+function getAllRecruitedBandits() {
+    const set = new Set();
+    for (let i = 1; i <= 4; i++) {
+        sc[i].recruited.forEach(slot => {
+            const p = state.players.find(p => p.slot === slot);
+            if (p && p.role === 'БАНДИТ') set.add(slot);
+        });
+    }
+    return set;
+}
+
+// Global bribe counter — maintained as locations are checked
+let globalBribes = 0;
+let corruptFromLoc = null;
+
+function checkLocation(locId) {
+    const loc = LOCATIONS.find(l => l.id === locId);
+    const players = state.players;
+    const panel = document.getElementById(`loc${locId}-result-panel`);
+    const lines = [];
+    const recruitedBandits = getAllRecruitedBandits();
+
+    let mafia = sc[locId].mafia;
+    let agent = sc[locId].agent;
+    const raids = sc[locId].raids;
+
+    // ── Arrests → bribes ──
+    const arrestEntries = Object.entries(sc[locId].arrested).filter(([,c]) => c > 0);
+    if (arrestEntries.length > 0) {
+        lines.push('АРЕСТЫ:');
+        arrestEntries.forEach(([slotStr, count]) => {
+            const slot = parseInt(slotStr);
+            const p = players.find(p => p.slot === slot);
+            if (!p) return;
+            const agentSide = p.role === 'АГЕНТ' || (p.role === 'БАНДИТ' && recruitedBandits.has(slot));
+            const wrongCount = agentSide ? count : 0;
+            globalBribes += wrongCount;
+            if (wrongCount > 0 && corruptFromLoc === null && globalBribes >= 5) corruptFromLoc = locId;
+            const verdict = agentSide
+                ? `${count}x ошибочный арест → +${wrongCount} взяток Шерифу`
+                : `${count}x — законный арест`;
+            lines.push(`  ${slot}. ${p.name} (${p.role}): ${verdict}`);
+        });
+    }
+
+    // ── Recruitments ──
+    if (sc[locId].recruited.size > 0) {
+        lines.push('ВЕРБОВКИ:');
+        sc[locId].recruited.forEach(slot => {
+            const p = players.find(p => p.slot === slot);
+            if (!p) return;
+            if (p.role === 'БАНДИТ') {
+                agent++;
+                lines.push(`  ${slot}. ${p.name} — БАНДИТ принял вербовку. +1 гильза Агенту`);
+                // Add to revealed if not already there
+                if (!revealedRoles.find(r => r.slot === slot)) {
+                    revealedRoles.push({ slot, name:p.name, role:p.role, displayRole:'БАНДИТ → АГЕНТ', type:'law' });
+                }
+            } else {
+                lines.push(`  ${slot}. ${p.name} — ${p.role} отказался. Гильза убрана`);
+                if (!revealedRoles.find(r => r.slot === slot)) {
+                    revealedRoles.push({ slot, name:p.name, role:p.role, displayRole:p.role + ' (отказ)', type:'syndicate' });
+                }
+            }
+        });
+    }
+
+    // ── Corrupt sheriff effect ──
+    const isCorruptHere = corruptFromLoc !== null && corruptFromLoc <= locId;
+    if (raids > 0) {
+        if (isCorruptHere) {
+            const bonus = raids * loc.mafiaMin;
+            mafia += raids + bonus;
+            agent = Math.max(0, agent - loc.mafiaMin);
+            lines.push(`ОБЛАВЫ (${raids}): Шериф ПРОДАЖНЫЙ — каждая облава +${1+loc.mafiaMin} Мафии, Агент -${loc.mafiaMin}`);
+        } else {
+            lines.push(`ОБЛАВЫ (${raids}): Шериф честный — гильзы на счёт облав`);
+        }
+    }
+
+    if (globalBribes > 0 && corruptFromLoc === null) {
+        lines.push(`Взяток Шерифа накоплено: ${globalBribes} из 5`);
+    } else if (corruptFromLoc !== null) {
+        lines.push(`Шериф ПРОДАЖНЫЙ с локации ${corruptFromLoc} (взяток: ${globalBribes})`);
+    }
+
+    // ── Control ──
+    let ctrl, ctrlColor;
+    if (mafia > agent)       { ctrl = 'СИНДИКАТ';     ctrlColor = '#e05050'; }
+    else if (agent > mafia)  { ctrl = 'АГЕНТ / ЗАКОН'; ctrlColor = '#4cd964'; }
+    else                     { ctrl = 'НИЧЬЯ';          ctrlColor = '#c8a96e'; }
+
+    panel.style.display = 'block';
+    panel.style.color = 'rgba(255,255,255,0.75)';
+    panel.textContent = lines.join('\n');
+    const ctrlLine = document.createElement('div');
+    ctrlLine.className = 'control-line';
+    ctrlLine.style.color = ctrlColor;
+    ctrlLine.textContent = `Контроль: ${ctrl} (Синдикат ${mafia} / Агент ${agent})`;
+    panel.appendChild(ctrlLine);
+
+    // Update revealed bars for subsequent locations
+    for (let next = locId + 1; next <= 5; next++) {
+        renderRevealedBar(`revealed-bar-${next}`);
+    }
+}
+
+// ─── Build full scoring UI ───────────────────────────────────
 function buildScoringUI() {
     initScoringState();
-    const players = state.players;
-    const container = document.getElementById('scoring-locations-container');
-    container.innerHTML = '';
+    globalBribes = 0;
+    corruptFromLoc = null;
+
     document.getElementById('sc-result-box').style.display = 'none';
     document.getElementById('btn-finish-game').style.display = 'none';
+    const cont = document.getElementById('scoring-locations-container');
+    cont.innerHTML = '';
 
     LOCATIONS.forEach(loc => {
         const block = document.createElement('div');
@@ -811,277 +1088,194 @@ function buildScoringUI() {
 
         if (!loc.isVilla) {
             block.innerHTML = `
-                <div class="loc-header">${loc.id}. ${loc.name}<span class="loc-sub">${loc.available} гильз | Состав: ${loc.players} | ${loc.note}</span></div>
-                <div class="loc-body">
-                    <div class="loc-row">
-                        <div class="loc-label">Гильз Синдиката на базе этой локации</div>
-                        <input class="loc-input" type="number" id="loc${loc.id}-mafia" min="0" max="${loc.available}" value="0">
-                    </div>
-                    <div class="loc-row">
-                        <div class="loc-label">Гильз Агента на базе этой локации</div>
-                        <input class="loc-input" type="number" id="loc${loc.id}-agent" min="0" max="${loc.available}" value="0">
-                    </div>
-                    <div class="loc-row">
-                        <div class="loc-label">Жетонов облавы использовано (0–3)</div>
-                        <input class="loc-input" type="number" id="loc${loc.id}-raids" min="0" max="3" value="0">
-                    </div>
-                    <div>
-                        <div class="loc-section-label">КТО БЫЛ АРЕСТОВАН НА ЭТОЙ ЛОКАЦИИ</div>
-                        <div class="tap-grid" id="loc${loc.id}-arrested-grid"></div>
-                    </div>
-                    <div>
-                        <div class="loc-section-label">ПОПЫТКИ ВЕРБОВКИ — КТО ПОЛУЧИЛ ЖЕТОН</div>
-                        <div class="tap-grid" id="loc${loc.id}-recruit-grid"></div>
-                    </div>
+                <div class="loc-header">${loc.id}. ${loc.name}
+                  <span class="loc-sub">${loc.available} гильз | ${loc.players} игроков | ${loc.note}${loc.noShoot ? ' | Перестрелка запрещена' : ''}</span>
                 </div>
-                <div class="loc-result-line" id="loc${loc.id}-result"></div>
+                <div id="revealed-bar-${loc.id}" class="revealed-bar" style="display:none;"></div>
+                <div class="loc-body">
+                  <div>
+                    <div class="loc-section-label">ГИЛЬЗЫ СИНДИКАТА</div>
+                    <div class="bullet-row" id="loc${loc.id}-mafia-row"></div>
+                  </div>
+                  <div>
+                    <div class="loc-section-label">ГИЛЬЗЫ АГЕНТА</div>
+                    <div class="bullet-row" id="loc${loc.id}-agent-row"></div>
+                  </div>
+                  <div>
+                    <div class="loc-section-label">ОБЛАВЫ ШЕРИФА (ИСПОЛЬЗОВАННЫЕ)</div>
+                    <div class="raid-row" id="loc${loc.id}-raid-row"></div>
+                  </div>
+                  <div>
+                    <div class="loc-section-label">КТО БЫЛ АРЕСТОВАН — ТАП ДЛЯ СЧЁТЧИКА (ДО 3 РАЗ)</div>
+                    <div class="tap-grid" id="loc${loc.id}-arrest-grid"></div>
+                  </div>
+                  <div>
+                    <div class="loc-section-label">ПОПЫТКИ ВЕРБОВКИ — КТО ПОЛУЧИЛ ЖЕТОН</div>
+                    <div class="tap-grid" id="loc${loc.id}-recruit-grid"></div>
+                  </div>
+                  <button class="btn" style="margin-top:4px;" id="loc${loc.id}-check-btn">ПРОВЕРИТЬ ЛОКАЦИЮ ${loc.id}</button>
+                </div>
+                <div class="loc-result-panel" id="loc${loc.id}-result-panel"></div>
             `;
         } else {
             block.innerHTML = `
-                <div class="loc-header">5. ВИЛЛА ДОНА<span class="loc-sub">${loc.note}</span></div>
-                <div class="loc-body">
-                    <div style="font-size:0.8rem;color:var(--grey);line-height:1.5;">Выбери трёх игроков, попавших на виллу. Каждый принесёт 2 гильзы своей команде (роли раскрываются в сверке).</div>
-                    <div>
-                        <div class="loc-section-label">КТО ПОПАЛ НА ВИЛЛУ (ВЫБЕРИ 3)</div>
-                        <div class="tap-grid" id="loc5-villa-grid"></div>
-                    </div>
+                <div class="loc-header">5. ВИЛЛА ДОНА
+                  <span class="loc-sub">${loc.note}</span>
                 </div>
-                <div class="loc-result-line" id="loc5-result"></div>
+                <div id="revealed-bar-5" class="revealed-bar" style="display:none;"></div>
+                <div class="loc-body">
+                  <div style="font-size:0.79rem;color:#666;line-height:1.55;">
+                    Выбери трёх игроков попавших на виллу после перестрелки пальцем. Каждый приносит 2 гильзы своей команде.
+                  </div>
+                  <div>
+                    <div class="loc-section-label">КТО ПОПАЛ НА ВИЛЛУ (ВЫБЕРИ 3)</div>
+                    <div class="tap-grid" id="loc5-villa-grid"></div>
+                  </div>
+                  <button class="btn" style="margin-top:4px;" id="loc5-check-btn">ПРОВЕРИТЬ ВИЛЛУ</button>
+                </div>
+                <div class="loc-result-panel" id="loc5-result-panel"></div>
             `;
         }
+        cont.appendChild(block);
 
-        container.appendChild(block);
-
-        // Build player tap buttons
+        // Wire up components
         if (!loc.isVilla) {
-            buildTapGrid(`loc${loc.id}-arrested-grid`, players, (slot, btn) => {
-                if (sc[loc.id].arrested.has(slot)) {
-                    sc[loc.id].arrested.delete(slot);
-                    btn.classList.remove('selected');
-                } else {
-                    sc[loc.id].arrested.add(slot);
-                    btn.classList.add('selected');
-                }
-            });
-            buildTapGrid(`loc${loc.id}-recruit-grid`, players, (slot, btn) => {
-                if (sc[loc.id].recruited.has(slot)) {
-                    sc[loc.id].recruited.delete(slot);
-                    btn.classList.remove('selected', 'selected-agent');
-                } else {
-                    sc[loc.id].recruited.add(slot);
-                    // Show green if Бандит (successful), gold if Свой/Дон (failed)
-                    const p = players.find(p => p.slot === slot);
-                    btn.classList.add(p && p.role === 'БАНДИТ' ? 'selected-agent' : 'selected');
-                }
-            });
+            buildBulletRow(document.getElementById(`loc${loc.id}-mafia-row`), loc.available, 'mafia', loc.id);
+            buildBulletRow(document.getElementById(`loc${loc.id}-agent-row`), loc.available, 'agent', loc.id);
+            buildRaidRow(document.getElementById(`loc${loc.id}-raid-row`), loc.id);
+            buildArrestGrid(document.getElementById(`loc${loc.id}-arrest-grid`), loc.id);
+            buildRecruitGrid(document.getElementById(`loc${loc.id}-recruit-grid`), loc.id);
+            document.getElementById(`loc${loc.id}-check-btn`).addEventListener('click', () => checkLocation(loc.id));
         } else {
-            buildTapGrid('loc5-villa-grid', players, (slot, btn) => {
-                if (sc[5].villa.has(slot)) {
-                    sc[5].villa.delete(slot);
-                    btn.classList.remove('selected-agent');
-                    // Re-enable all buttons
-                    document.querySelectorAll('#loc5-villa-grid .tap-btn').forEach(b => b.classList.remove('villa-max'));
-                } else {
-                    if (sc[5].villa.size >= 3) return; // max 3
-                    sc[5].villa.add(slot);
-                    btn.classList.add('selected-agent');
-                    if (sc[5].villa.size >= 3) {
-                        // Disable unselected buttons
-                        document.querySelectorAll('#loc5-villa-grid .tap-btn:not(.selected-agent)').forEach(b => b.classList.add('villa-max'));
-                    }
-                }
-            });
+            buildVillaGrid(document.getElementById('loc5-villa-grid'));
+            document.getElementById('loc5-check-btn').addEventListener('click', checkVilla);
         }
     });
+
+    // Location 1 revealed bar shows Sheriff from the start
+    renderRevealedBar('revealed-bar-1');
 }
 
-function buildTapGrid(containerId, players, onToggle) {
-    const grid = document.getElementById(containerId);
-    if (!grid) return;
-    players.forEach(p => {
-        const btn = document.createElement('div');
-        btn.className = 'tap-btn';
-        btn.textContent = p.slot;
-        btn.title = p.name;
-        btn.addEventListener('click', () => onToggle(p.slot, btn));
-        grid.appendChild(btn);
-    });
-}
-
-function calcScoring() {
+function checkVilla() {
     const players = state.players;
+    const recruitedBandits = getAllRecruitedBandits();
+    const panel = document.getElementById('loc5-result-panel');
+    const lines = ['ВИЛЛА ДОНА — РЕЗУЛЬТАТ:'];
+    let mafia = 0, agent = 0;
 
-    // === PHASE 1: Determine successfully recruited bandits across ALL locations ===
-    // Recruited = has recruitment token (marked in any location)
-    // Success = player role is БАНДИТ (they always accept per rules)
-    // Failure = СВОЙ or ДОН (they always refuse per rules)
-    const recruitedBandits = new Set(); // slots of successfully recruited bandits
-    for (let locId = 1; locId <= 4; locId++) {
-        sc[locId].recruited.forEach(slot => {
-            const p = players.find(p => p.slot === slot);
-            if (p && p.role === 'БАНДИТ') recruitedBandits.add(slot);
-        });
-    }
-
-    // === PHASE 2: Process each location in order (per faza sverki rules) ===
-    let totalBribes = 0;
-    let corruptAtLocation = null; // location ID where sheriff hit 5 bribes
-    const locResults = [];
-
-    for (let locId = 1; locId <= 4; locId++) {
-        const loc = LOCATIONS.find(l => l.id === locId);
-        let mafia = parseInt(document.getElementById(`loc${locId}-mafia`).value) || 0;
-        let agent = parseInt(document.getElementById(`loc${locId}-agent`).value) || 0;
-        const raids = parseInt(document.getElementById(`loc${locId}-raids`).value) || 0;
-        const notes = [];
-
-        // --- Step 1: Check arrests → bribe tokens ---
-        // Wrong arrest = arrested player is on AGENT'S SIDE
-        // Agent's side = АГЕНТ or successfully recruited БАНДИТ
-        let locBribes = 0;
-        sc[locId].arrested.forEach(slot => {
-            const p = players.find(p => p.slot === slot);
-            if (!p) return;
-            const agentSide = p.role === 'АГЕНТ' || (p.role === 'БАНДИТ' && recruitedBandits.has(slot));
-            if (agentSide) {
-                totalBribes++;
-                locBribes++;
-                if (corruptAtLocation === null && totalBribes >= 5) {
-                    corruptAtLocation = locId;
-                }
-            }
-        });
-
-        // --- Step 2: Check recruitments → move bullets ---
-        // Per rules: successful recruitment (Бандит) → bullet from recruitment zone → Agent base
-        // Failed recruitment (Свой/Дон) → bullet removed (from game)
-        let recruitBonus = 0;
-        let recruitNotes = [];
-        sc[locId].recruited.forEach(slot => {
-            const p = players.find(p => p.slot === slot);
-            if (!p) return;
-            if (p.role === 'БАНДИТ') {
-                // Successful: gildza from recruitment zone → Agent base
-                agent++;
-                recruitBonus++;
-                recruitNotes.push(`Игрок ${slot} (${p.name}) — Бандит принял вербовку: +1 гильза Агенту`);
-            } else if (p.role === 'СВОЙ' || p.role === 'ДОН') {
-                // Failed: gildza removed
-                recruitNotes.push(`Игрок ${slot} (${p.name}) — Свой отказался: гильза убрана`);
-            }
-        });
-        notes.push(...recruitNotes);
-
-        // --- Step 3: Corrupt sheriff effect ---
-        // Applied if sheriff is corrupt AT OR BEFORE this location AND raids > 0
-        // Effect: each raid bullet → Mafia + Mafia gets mafiaMin bonus + Agent loses mafiaMin
-        const isCorruptHere = corruptAtLocation !== null && corruptAtLocation <= locId;
-        if (isCorruptHere && raids > 0) {
-            const corruptBonus = raids * loc.mafiaMin;
-            const agentPenalty = raids * loc.mafiaMin;
-            mafia += raids + corruptBonus;
-            agent = Math.max(0, agent - agentPenalty);
-            notes.push(`Продажный шериф (${raids} облав): Мафия +${raids + corruptBonus}, Агент -${agentPenalty}`);
-        }
-
-        // --- Step 4: Determine location control ---
-        let control, controlColor;
-        if (mafia > agent) { control = 'СИНДИКАТ'; controlColor = '#e55;'; }
-        else if (agent > mafia) { control = 'АГЕНТ/ЗАКОН'; controlColor = '#4cd964'; }
-        else { control = 'НИЧЬЯ'; controlColor = '#c8a96e'; }
-
-        locResults.push({ locId, name:loc.name, mafia, agent, raids, control, controlColor, notes, locBribes });
-
-        // Show inline result
-        const resultEl = document.getElementById(`loc${locId}-result`);
-        if (resultEl) {
-            resultEl.style.display = 'block';
-            resultEl.style.color = controlColor;
-            resultEl.textContent = `Контроль: ${control} (Синдикат ${mafia} / Агент ${agent})`;
-        }
-    }
-
-    // === VILLA (location 5) ===
-    let villaMafia = 0, villaAgent = 0;
-    const villaNames = [];
     sc[5].villa.forEach(slot => {
         const p = players.find(p => p.slot === slot);
         if (!p) return;
-        // Determine team at villa time (after all recruitments)
         const agentSide = p.role === 'АГЕНТ' || p.role === 'ШЕРИФ' || (p.role === 'БАНДИТ' && recruitedBandits.has(slot));
-        if (agentSide) { villaAgent += 2; villaNames.push(`${p.slot}.${p.name}: +2 Агенту`); }
-        else { villaMafia += 2; villaNames.push(`${p.slot}.${p.name}: +2 Мафии`); }
+        if (agentSide) { agent += 2; lines.push(`  ${slot}. ${p.name} (${p.role}): +2 Агенту`); }
+        else           { mafia += 2; lines.push(`  ${slot}. ${p.name} (${p.role}): +2 Синдикату`); }
     });
 
-    let villaControl, villaColor;
-    if (villaMafia > villaAgent) { villaControl = 'СИНДИКАТ'; villaColor = '#e55'; }
-    else if (villaAgent > villaMafia) { villaControl = 'АГЕНТ/ЗАКОН'; villaColor = '#4cd964'; }
-    else { villaControl = 'НИЧЬЯ'; villaColor = '#c8a96e'; }
+    if (sc[5].villa.size < 3) lines.push('  (выбрано менее 3 игроков)');
 
-    const villaResultEl = document.getElementById('loc5-result');
-    if (villaResultEl) {
-        villaResultEl.style.display = 'block';
-        villaResultEl.style.color = villaColor;
-        villaResultEl.textContent = `Контроль: ${villaControl} (Синдикат ${villaMafia} / Агент ${villaAgent})`;
+    let ctrl, ctrlColor;
+    if (mafia > agent)       { ctrl = 'СИНДИКАТ';     ctrlColor = '#e05050'; }
+    else if (agent > mafia)  { ctrl = 'АГЕНТ / ЗАКОН'; ctrlColor = '#4cd964'; }
+    else                     { ctrl = 'НИЧЬЯ';          ctrlColor = '#c8a96e'; }
+
+    panel.style.display = 'block';
+    panel.style.color = 'rgba(255,255,255,0.75)';
+    panel.textContent = lines.join('\n');
+    const ctrlLine = document.createElement('div');
+    ctrlLine.className = 'control-line';
+    ctrlLine.style.color = ctrlColor;
+    ctrlLine.textContent = `Контроль Виллы: ${ctrl} (Синдикат ${mafia} / Агент ${agent})`;
+    panel.appendChild(ctrlLine);
+
+    sc[5]._mafia = mafia;
+    sc[5]._agent = agent;
+}
+
+// ─── Final calculation ───────────────────────────────────────
+function calcScoring() {
+    const players = state.players;
+    const recruitedBandits = getAllRecruitedBandits();
+    let mafiaCtrl = 0, agentCtrl = 0;
+    const lines = [];
+
+    // Process locations 1-4
+    for (let locId = 1; locId <= 4; locId++) {
+        const loc = LOCATIONS.find(l => l.id === locId);
+        let mafia = sc[locId].mafia;
+        let agent = sc[locId].agent;
+        const raids = sc[locId].raids;
+
+        // Apply recruitments
+        sc[locId].recruited.forEach(slot => {
+            const p = players.find(p => p.slot === slot);
+            if (p && p.role === 'БАНДИТ') agent++;
+        });
+
+        // Apply corrupt sheriff
+        const isCorruptHere = corruptFromLoc !== null && corruptFromLoc <= locId;
+        if (isCorruptHere && raids > 0) {
+            mafia += raids + (raids * loc.mafiaMin);
+            agent = Math.max(0, agent - loc.mafiaMin);
+        }
+
+        if (mafia > agent)      { mafiaCtrl++; lines.push(`${locId}. ${loc.name}: СИНДИКАТ (${mafia}/${agent})`); }
+        else if (agent > mafia) { agentCtrl++; lines.push(`${locId}. ${loc.name}: АГЕНТ (${agent}/${mafia})`); }
+        else                    { lines.push(`${locId}. ${loc.name}: НИЧЬЯ (${mafia}/${agent}) — локация не контролируется`); }
     }
-
-    // === FINAL TALLY ===
-    let mafiaControl = 0, agentControl = 0;
-    const resultLines = [];
-
-    locResults.forEach(r => {
-        if (r.control === 'СИНДИКАТ') mafiaControl++;
-        else if (r.control === 'АГЕНТ/ЗАКОН') agentControl++;
-        let line = `${r.locId}. ${r.name}: ${r.control} (Синдикат ${r.mafia} / Агент ${r.agent})`;
-        if (r.notes.length) line += '\n   ' + r.notes.join('\n   ');
-        resultLines.push(line);
-    });
 
     // Villa
-    if (villaMafia > villaAgent) mafiaControl++;
-    else if (villaAgent > villaMafia) agentControl++;
-    let villaLine = `5. Вилла Дона: ${villaControl} (Синдикат ${villaMafia} / Агент ${villaAgent})`;
-    if (villaNames.length) villaLine += '\n   ' + villaNames.join('\n   ');
-    resultLines.push(villaLine);
+    const vMafia = sc[5]._mafia || 0, vAgent = sc[5]._agent || 0;
+    if (vMafia > vAgent)       { mafiaCtrl++; lines.push(`5. Вилла Дона: СИНДИКАТ (${vMafia}/${vAgent})`); }
+    else if (vAgent > vMafia)  { agentCtrl++; lines.push(`5. Вилла Дона: АГЕНТ (${vAgent}/${vMafia})`); }
+    else                       { lines.push(`5. Вилла Дона: НИЧЬЯ (${vMafia}/${vAgent})`); }
 
-    // Tiebreak: 2:2 → villa decides (per rulebook)
+    // Determine winner — per rulebook 2:2 Villa resolves, otherwise most guilzas total
     let winnerTitle, winnerText;
-    if (mafiaControl >= 3) {
+    if (mafiaCtrl >= 3) {
         winnerTitle = 'ПОБЕДА СИНДИКАТА';
-        winnerText = `Синдикат контролирует ${mafiaControl} из 5 локаций.\nОперация Чёрный Одуванчик провалилась.`;
-    } else if (agentControl >= 3) {
+        winnerText = `Синдикат контролирует ${mafiaCtrl} из 5 локаций. Операция Чёрный Одуванчик провалилась.`;
+    } else if (agentCtrl >= 3) {
         winnerTitle = 'ПОБЕДА АГЕНТА И ЗАКОНА';
-        winnerText = `Агент и Шериф контролируют ${agentControl} из 5 локаций.\nСиндикат разгромлен.`;
-    } else if (mafiaControl === 2 && agentControl === 2) {
-        // Tiebreak: more villa bullets wins
-        winnerTitle = 'НИЧЬЯ — ВИЛЛА РЕШАЕТ';
-        if (villaMafia > villaAgent) winnerText = `Счёт 2:2. На Вилле Дона больше гильз у Синдиката (${villaMafia} vs ${villaAgent}).\nПОБЕДА СИНДИКАТА.`;
-        else if (villaAgent > villaMafia) winnerText = `Счёт 2:2. На Вилле Дона больше гильз у Агента (${villaAgent} vs ${villaMafia}).\nПОБЕДА АГЕНТА И ЗАКОНА.`;
-        else winnerText = `Полная ничья 2:2, и Вилла тоже не разрешила исход. Переиграть финальный подсчёт.`;
+        winnerText = `Агент и Шериф контролируют ${agentCtrl} из 5 локаций. Синдикат разгромлен.`;
+    } else if (mafiaCtrl === 2 && agentCtrl === 2) {
+        // Tiebreak: Villa — per rulebook "При ничье 2:2 Вилла решает"
+        if (vMafia > vAgent) {
+            winnerTitle = 'ПОБЕДА СИНДИКАТА (тайбрейк — Вилла)';
+            winnerText = `Счёт 2:2. На Вилле Дона больше гильз у Синдиката (${vMafia} vs ${vAgent}).`;
+        } else if (vAgent > vMafia) {
+            winnerTitle = 'ПОБЕДА АГЕНТА И ЗАКОНА (тайбрейк — Вилла)';
+            winnerText = `Счёт 2:2. На Вилле Дона больше гильз у Агента (${vAgent} vs ${vMafia}).`;
+        } else {
+            // Per rules Villa must resolve — most total guilzas across all locations
+            winnerTitle = 'ПОБЕДА ПО ОБЩЕМУ КОЛИЧЕСТВУ ГИЛЬЗ';
+            const totalM = [1,2,3,4].reduce((s,i)=>s+sc[i].mafia,0) + vMafia;
+            const totalA = [1,2,3,4].reduce((s,i)=>s+sc[i].agent,0) + vAgent;
+            winnerText = totalM > totalA
+                ? `Полная ничья по локациям и Вилле. Синдикат победил по общему кол-ву гильз (${totalM} vs ${totalA}).`
+                : totalA > totalM
+                ? `Полная ничья по локациям и Вилле. Агент победил по общему кол-ву гильз (${totalA} vs ${totalM}).`
+                : 'Абсолютная ничья — переиграть.';
+        }
     } else {
         winnerTitle = 'НЕРЕШЁННЫЙ ИТОГ';
-        winnerText = `Синдикат: ${mafiaControl} / Агент: ${agentControl}\nНикто не набрал 3 локации.`;
+        winnerText = `Синдикат: ${mafiaCtrl} лок. / Агент: ${agentCtrl} лок. Никто не набрал 3.`;
     }
 
-    // Show corrupt cop summary if applicable
+    // Corrupt summary
     const corruptBox = document.getElementById('sc-corrupt-info');
-    if (corruptAtLocation) {
+    if (globalBribes >= 5) {
         corruptBox.style.display = 'block';
         document.getElementById('sc-corrupt-text').textContent =
-            `Шериф получил 5 взяток и стал продажным, начиная с локации ${corruptAtLocation}.\n` +
-            `Всего взяток: ${totalBribes}.\n` +
-            `Все облавы на локациях ${corruptAtLocation}–4 переведены в пользу Мафии.`;
+            `Шериф стал ПРОДАЖНЫМ с локации ${corruptFromLoc} (взяток: ${globalBribes}).\nВсе облавы начиная с локации ${corruptFromLoc} засчитаны Мафии.`;
     } else {
-        corruptBox.style.display = 'none';
-        if (totalBribes > 0) {
-            corruptBox.style.display = 'block';
-            corruptBox.style.borderColor = '#c8a96e';
-            corruptBox.querySelector('div').style.color = '#c8a96e';
-            document.getElementById('sc-corrupt-text').textContent = `Шериф получил ${totalBribes} взяток — до продажного не дотянул (нужно 5).`;
+        corruptBox.style.display = globalBribes > 0 ? 'block' : 'none';
+        if (globalBribes > 0) {
+            corruptBox.style.borderLeftColor = '#c8a96e';
+            document.getElementById('sc-corrupt-text').textContent = `Шериф получил ${globalBribes} взяток — до продажного не дотянул (нужно 5).`;
         }
     }
 
-    document.getElementById('sc-result-text').textContent = resultLines.join('\n\n');
+    document.getElementById('sc-result-text').textContent = lines.join('\n');
     document.getElementById('sc-winner-title').textContent = winnerTitle;
     document.getElementById('sc-winner-text').textContent = winnerText;
     document.getElementById('sc-result-box').style.display = 'block';
@@ -1097,6 +1291,7 @@ async function finishGame() {
     Object.assign(state, { sessionId:null, playerCount:0, mySlot:null, myName:'', myRole:'', players:[], rolesJson:[] });
     showScreen('entry');
 }
+
 // ============================================================
 // TEST MODE — auto-fill players for quick testing
 // ============================================================
