@@ -119,7 +119,18 @@
         .final-screen { background: #000; justify-content: center; align-items: center; text-align: center; }
         .final-text { font-family: var(--font-display); font-size: 3rem; color: var(--gold); letter-spacing: 0.2em; }
 
-        /* Utils */
+        /* Scoring */
+        .loc-block { background:#111; border:1px solid #2a2a2a; margin-bottom:12px; }
+        .loc-header { background:#1a1a1a; padding:10px 14px; font-family:var(--font-display); font-size:1.1rem; color:var(--gold); letter-spacing:0.1em; border-bottom:1px solid #2a2a2a; }
+        .loc-body { padding:12px 14px; display:flex; flex-direction:column; gap:10px; }
+        .loc-row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+        .loc-label { font-size:0.82rem; color:rgba(255,255,255,0.75); flex:1; line-height:1.3; }
+        .loc-input { width:65px; text-align:center; font-size:1.1rem; padding:6px; flex-shrink:0; }
+        .loc-note { font-size:0.74rem; color:var(--grey); line-height:1.3; }
+        .loc-result { padding:8px 14px; background:#0d1a0d; font-size:0.85rem; color:#4cd964; border-top:1px solid #2a2a2a; display:none; }
+        /* Test mode */
+        .test-btn { position:fixed; bottom:12px; right:12px; width:36px; height:36px; background:#1a1a1a; border:1px solid #333; color:#555; font-size:0.7rem; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:500; border-radius:4px; letter-spacing:0; font-family:monospace; }
+        .test-btn:active { background:#333; }
         .error-msg { color: #ff3b30; font-size: 0.85rem; margin-bottom: 10px; text-align: center; min-height: 20px; line-height: 1.4; }
         .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .spinner { width: 40px; height: 40px; border: 4px solid rgba(200,169,110,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
@@ -134,8 +145,10 @@
         <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
             <h1 style="font-size:3rem;text-align:center;margin-bottom:10px;">ЧЁРНЫЙ<br><span class="title-gold">ОДУВАНЧИК</span></h1>
             <p style="text-align:center;color:var(--grey);font-size:0.78rem;letter-spacing:0.12em;margin-bottom:44px;">СИНДИКАТ МОЛЧАЩИХ</p>
-            <button class="btn" id="btn-create">СОЗДАТЬ ИГРУ</button>
-            <button class="btn btn-secondary" id="btn-join">ВОЙТИ В ИГРУ</button>
+            <button class="btn" id="btn-join">ВОЙТИ В ИГРУ</button>
+        </div>
+        <div style="padding-bottom:20px;">
+            <button class="btn btn-secondary" id="btn-create" style="font-size:0.85rem;min-height:40px;opacity:0.6;">СОЗДАТЬ ИГРУ (ХОСТ)</button>
         </div>
     </div>
 
@@ -282,12 +295,52 @@
         </div>
     </div>
 
-    <!-- FINAL -->
-    <div id="screen-final" class="screen final-screen">
+    <!-- FINAL SCREEN -->
+    <div id="screen-final" class="screen final-screen" style="flex-direction:column;gap:20px;">
         <div class="final-text">ОПЕРАЦИЯ<br>НАЧАТА</div>
+        <div id="host-scoring-area" style="display:none;width:100%;padding:0 20px;">
+            <button class="btn" id="btn-scoring">ПОДСЧЁТ ОЧКОВ</button>
+        </div>
+    </div>
+
+    <!-- SCREEN: SCORING -->
+    <div id="screen-scoring" class="screen" style="overflow-y:auto;padding:16px;">
+        <h2 class="title-gold" style="margin-bottom:4px;font-size:1.8rem;">ФАЗА СВЕРКИ</h2>
+        <p style="color:var(--grey);font-size:0.8rem;margin-bottom:16px;">Заполните данные по каждой локации</p>
+
+        <!-- corrupt sheriff tracker (global) -->
+        <div class="rc-section warn" style="margin:0 0 14px;">
+            <div class="rc-section-title">ПРОДАЖНЫЙ ШЕРИФ</div>
+            <div class="rc-section-body" style="font-size:0.85rem;margin-bottom:8px;">Сколько ошибочных арестов совершил Шериф? (арестовал игрока со стороны Агента)</div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <span style="color:var(--grey);font-size:0.82rem;">Взяток получено:</span>
+                <input type="number" id="sc-bribes" min="0" max="20" value="0"
+                    style="width:70px;text-align:center;font-size:1.2rem;padding:6px;">
+                <span id="sc-corrupt-label" style="color:#ff3b30;font-size:0.82rem;display:none;">ПРОДАЖНЫЙ</span>
+            </div>
+            <div style="margin-top:6px;font-size:0.78rem;color:var(--grey);">5 или более взяток = продажный полицейский</div>
+        </div>
+
+        <div id="locations-form"></div>
+
+        <div id="sc-result-box" style="display:none;margin-top:10px;">
+            <div class="rc-section" style="border-left-color:#4cd964;margin:0 0 10px;">
+                <div class="rc-section-title" style="color:#4cd964;">ИТОГ ПО ЛОКАЦИЯМ</div>
+                <div class="rc-section-body" id="sc-result-text" style="white-space:pre-line;"></div>
+            </div>
+            <div class="rc-section warn" id="sc-winner-box">
+                <div class="rc-section-title" id="sc-winner-title">ПОБЕДИТЕЛЬ</div>
+                <div class="rc-section-body" id="sc-winner-text"></div>
+            </div>
+        </div>
+
+        <button class="btn" id="btn-calc-score" style="margin-top:12px;">ПОДСЧИТАТЬ РЕЗУЛЬТАТ</button>
+        <button class="btn btn-secondary" id="btn-finish-game" style="display:none;margin-top:6px;">ЗАКОНЧИТЬ ИГРУ</button>
+        <button class="btn btn-secondary" id="btn-back-from-scoring" style="margin-top:6px;opacity:0.6;font-size:0.85rem;min-height:40px;">НАЗАД</button>
     </div>
 
 </div>
+<button class="test-btn" id="btn-test-mode" title="Тест: авто-заполнить игроков">T</button>
 <div id="loading" class="loading"><div class="spinner"></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -709,10 +762,237 @@ function onGoToRole() {
 }
 function startTimer() {
     let t=30; const ring=document.getElementById('timer-ring'), txt=document.getElementById('timer-countdown');
-    const iv=setInterval(()=>{ t--; txt.textContent=t; ring.style.strokeDashoffset=176-(t/30)*176; if(t<=0){clearInterval(iv);showScreen('final');} },1000);
+    const iv=setInterval(()=>{
+        t--; txt.textContent=t;
+        ring.style.strokeDashoffset=176-(t/30)*176;
+        if(t<=0){
+            clearInterval(iv);
+            showScreen('final');
+            // Show scoring button only for host (slot 1)
+            if (state.mySlot === 1) {
+                document.getElementById('host-scoring-area').style.display = 'block';
+            }
+        }
+    },1000);
 }
 
-// === Wire buttons ===
+// ============================================================
+// SCORING — location data per rulebook v3
+// ============================================================
+
+// Location definitions strictly from rulebook v3
+const LOCATIONS = [
+    {
+        id: 1, name: 'СКЛАД',
+        available: 8,
+        note: 'Состав 2-3 чел: Синдикат +1 / Агент +4',
+        mafiaMin: 1, agentMin: 4
+    },
+    {
+        id: 2, name: 'АЭРОПОРТ',
+        available: 6,
+        note: 'Состав 4 чел: Синдикат +1 / Агент +3. Состав 7+: Синдикат +2 / Агент +4. Перестрелка на этой локации недопустима.',
+        mafiaMin: 1, agentMin: 3
+    },
+    {
+        id: 3, name: 'ГОРОД',
+        available: 10,
+        note: 'Состав 5-6 чел: оба по +1. Состав 7+: оба по +2.',
+        mafiaMin: 1, agentMin: 1
+    },
+    {
+        id: 4, name: 'ПОРТ',
+        available: 4,
+        note: 'Состав 5-6 чел: Синдикат +2 / Агент +1.',
+        mafiaMin: 2, agentMin: 1
+    },
+    {
+        id: 5, name: 'ВИЛЛА ДОНА',
+        available: 6, // 3 survivors x 2 bullets each
+        note: 'Особая локация. Перестрелка (указательный палец). 3 выживших игрока — каждый приносит своей команде 2 гильзы. Нет выставления дисков.',
+        mafiaMin: 2, agentMin: 2, isVilla: true
+    }
+];
+
+function buildLocationsForm() {
+    const container = document.getElementById('locations-form');
+    container.innerHTML = '';
+    LOCATIONS.forEach(loc => {
+        const block = document.createElement('div');
+        block.className = 'loc-block';
+        block.innerHTML = `
+            <div class="loc-header">${loc.id}. ${loc.name}</div>
+            <div class="loc-body">
+                <div class="loc-note">${loc.note}</div>
+                <div class="loc-row">
+                    <div class="loc-label">Гильз у Синдиката на этой локации</div>
+                    <input class="loc-input" type="number" min="0" max="${loc.available}" value="0" id="loc${loc.id}-mafia">
+                </div>
+                <div class="loc-row">
+                    <div class="loc-label">Гильз у Агента на этой локации</div>
+                    <input class="loc-input" type="number" min="0" max="${loc.available}" value="0" id="loc${loc.id}-agent">
+                </div>
+                ${!loc.isVilla ? `
+                <div class="loc-row">
+                    <div class="loc-label">Жетонов облавы на этой локации</div>
+                    <input class="loc-input" type="number" min="0" max="3" value="0" id="loc${loc.id}-raids">
+                </div>
+                <div class="loc-row">
+                    <div class="loc-label">Попыток вербовки (номера игроков через запятую)</div>
+                    <input type="text" placeholder="нпр: 3,7" id="loc${loc.id}-recruit"
+                        style="flex:1;max-width:120px;text-align:center;font-size:0.95rem;padding:6px;">
+                </div>
+                ` : `
+                <div class="loc-row">
+                    <div class="loc-label">Сколько игроков Синдиката попало на виллу (из 3)</div>
+                    <input class="loc-input" type="number" min="0" max="3" value="0" id="loc${loc.id}-mafia-villa">
+                </div>
+                <div class="loc-row">
+                    <div class="loc-label">Сколько игроков Агента/Закона попало на виллу (из 3)</div>
+                    <input class="loc-input" type="number" min="0" max="3" value="0" id="loc${loc.id}-agent-villa">
+                </div>
+                `}
+            </div>
+            <div class="loc-result" id="loc${loc.id}-result"></div>
+        `;
+        container.appendChild(block);
+    });
+
+    // Corrupt sheriff live indicator
+    document.getElementById('sc-bribes').addEventListener('input', function() {
+        const label = document.getElementById('sc-corrupt-label');
+        label.style.display = parseInt(this.value) >= 5 ? 'inline' : 'none';
+    });
+}
+
+function calcScoring() {
+    const bribes = parseInt(document.getElementById('sc-bribes').value) || 0;
+    const isCorrupt = bribes >= 5;
+
+    let mafiaControl = 0, agentControl = 0;
+    let resultLines = [];
+
+    LOCATIONS.forEach(loc => {
+        let mafia = parseInt(document.getElementById(`loc${loc.id}-mafia`).value) || 0;
+        let agent = parseInt(document.getElementById(`loc${loc.id}-agent`).value) || 0;
+
+        if (loc.isVilla) {
+            // Villa: each survivor brings 2 bullets to their team
+            const mafiaVilla = parseInt(document.getElementById(`loc${loc.id}-mafia-villa`).value) || 0;
+            const agentVilla = parseInt(document.getElementById(`loc${loc.id}-agent-villa`).value) || 0;
+            mafia += mafiaVilla * 2;
+            agent += agentVilla * 2;
+        } else {
+            const raids = parseInt(document.getElementById(`loc${loc.id}-raids`).value) || 0;
+
+            if (isCorrupt && raids > 0) {
+                // Corrupt sheriff: raid bullets go to mafia + minimum mafia value per location
+                // Per rulebook: raid token transferred to mafia + min mission value taken from agent
+                const corruptBonus = raids * loc.mafiaMin;
+                mafia += raids + corruptBonus;
+                agent = Math.max(0, agent - loc.agentMin);
+                resultLines.push(`  [Продажный шериф] ${loc.name}: +${raids + corruptBonus} гильз мафии от облав, -${loc.agentMin} у агента`);
+            }
+        }
+
+        // Determine control
+        let controlLine = '';
+        if (mafia > agent) {
+            mafiaControl++;
+            controlLine = `СИНДИКАТ (${mafia} vs ${agent})`;
+        } else if (agent > mafia) {
+            agentControl++;
+            controlLine = `АГЕНТ/ЗАКОН (${agent} vs ${mafia})`;
+        } else {
+            controlLine = `НИЧЬЯ (${mafia} vs ${agent})`;
+        }
+
+        // Show per-location result
+        const locResult = document.getElementById(`loc${loc.id}-result`);
+        locResult.style.display = 'block';
+        locResult.textContent = `Контроль: ${controlLine}`;
+
+        resultLines.push(`${loc.id}. ${loc.name}: ${controlLine}`);
+    });
+
+    // Determine winner — 3+ locations = win
+    let winnerTitle = '', winnerText = '';
+    if (mafiaControl >= 3) {
+        winnerTitle = 'ПОБЕДА СИНДИКАТА';
+        winnerText = `Синдикат контролирует ${mafiaControl} из 5 локаций.\nОперация Чёрный Одуванчик провалилась.`;
+    } else if (agentControl >= 3) {
+        winnerTitle = 'ПОБЕДА АГЕНТА / ЗАКОНА';
+        winnerText = `Агент и Закон контролируют ${agentControl} из 5 локаций.\nСиндикат разгромлен.`;
+    } else {
+        winnerTitle = 'НЕОПРЕДЕЛЁННЫЙ РЕЗУЛЬТАТ';
+        winnerText = `Синдикат: ${mafiaControl} лок. / Агент: ${agentControl} лок.\nНикто не набрал 3 локации — переиграть финальный подсчёт.`;
+    }
+
+    document.getElementById('sc-result-text').textContent = resultLines.join('\n');
+    document.getElementById('sc-winner-title').textContent = winnerTitle;
+    document.getElementById('sc-winner-text').textContent = winnerText;
+    document.getElementById('sc-result-box').style.display = 'block';
+    document.getElementById('btn-finish-game').style.display = 'flex';
+
+    // Scroll to results
+    document.getElementById('sc-result-box').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function finishGame() {
+    if (!sb || !state.sessionId) { showScreen('entry'); return; }
+    showLoading(true);
+    await sb.from('sessions').update({ status: 'finished' }).eq('id', state.sessionId);
+    showLoading(false);
+    // Reset state and go home
+    Object.assign(state, { sessionId:null, playerCount:0, mySlot:null, myName:'', myRole:'', players:[], rolesJson:[] });
+    showScreen('entry');
+}
+
+// ============================================================
+// TEST MODE — auto-fill players for quick testing
+// ============================================================
+async function runTestMode() {
+    if (!sb) return alert('Supabase не подключён');
+    const count = parseInt(prompt('Сколько тестовых игроков? (6-12)', '6'));
+    if (!count || count < 6 || count > 12) return;
+
+    showLoading(true);
+    const code = '0000'; // fixed test code
+
+    // Delete old test session if exists
+    await sb.from('players').delete().eq('session_id', code);
+    await sb.from('sessions').delete().eq('id', code);
+
+    const comp = COMPOSITION[count];
+    let pool = [];
+    for(let i=0;i<comp.don;i++) pool.push('ДОН');
+    for(let i=0;i<comp.svoy;i++) pool.push('СВОЙ');
+    for(let i=0;i<comp.bandit;i++) pool.push('БАНДИТ');
+    for(let i=0;i<comp.agent;i++) pool.push('АГЕНТ');
+    for(let i=0;i<comp.sherif;i++) pool.push('ШЕРИФ');
+    pool.sort(()=>Math.random()-0.5);
+    const roles = pool.map((r,i)=>({slot:i+1,role:r}));
+
+    await sb.from('sessions').insert({id:code, player_count:count, status:'waiting', roles_json:roles});
+
+    const testNames = ['Максим','Лена','Игорь','Таня','Рома','Катя','Саша','Витя','Юля','Дима','Нина','Паша'];
+    for (let i=0;i<count;i++) {
+        await sb.from('players').insert({session_id:code, slot:i+1, name:testNames[i], role:roles[i].role});
+    }
+
+    state.sessionId = code;
+    state.playerCount = count;
+    state.rolesJson = roles;
+    state.mySlot = 1;
+    state.myName = testNames[0];
+    state.myRole = roles[0].role;
+    state.players = roles.map((r,i)=>({slot:i+1, name:testNames[i], role:r.role, session_id:code}));
+
+    showLoading(false);
+    alert(`Тест: сессия 0000, ${count} игроков. Твоя роль: ${state.myRole} (слот 1)\n\nТеперь нажми на любую кнопку для продолжения.`);
+    setupRealtime(code);
+    await renderLobby();
+}
 function wire() {
     document.getElementById('btn-create').addEventListener('click', onCreate);
     document.getElementById('btn-join').addEventListener('click', onJoin);
@@ -726,6 +1006,11 @@ function wire() {
     document.getElementById('btn-go-to-call').addEventListener('click', onGoToCall);
     document.getElementById('btn-answer-call').addEventListener('click', onAnswerCall);
     document.getElementById('btn-go-to-role').addEventListener('click', onGoToRole);
+    document.getElementById('btn-scoring').addEventListener('click', ()=>{ buildLocationsForm(); showScreen('scoring'); });
+    document.getElementById('btn-calc-score').addEventListener('click', calcScoring);
+    document.getElementById('btn-finish-game').addEventListener('click', finishGame);
+    document.getElementById('btn-back-from-scoring').addEventListener('click', ()=>showScreen('final'));
+    document.getElementById('btn-test-mode').addEventListener('click', runTestMode);
 }
 
 if (document.readyState==='loading') { document.addEventListener('DOMContentLoaded',()=>{initSupabase();wire();}); }
