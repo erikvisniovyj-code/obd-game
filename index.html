@@ -521,11 +521,6 @@ function buildCountGrid() {
     const g = document.getElementById('player-count-grid'); g.innerHTML = '';
     for (let i=6;i<=12;i++) { const b=document.createElement('div'); b.className='slot-btn'; b.textContent=i; b.dataset.count=i; g.appendChild(b); }
 }
-document.getElementById('player-count-grid').addEventListener('click', function(e) {
-    const b = e.target.closest('.slot-btn'); if (!b) return;
-    this.querySelectorAll('.slot-btn').forEach(x=>x.classList.remove('selected'));
-    b.classList.add('selected'); state.playerCount = parseInt(b.dataset.count);
-});
 async function onCreateSession() {
     if (!sb) return showError('host-setup-error','Нет соединения с сервером');
     const name = document.getElementById('host-name').value.trim();
@@ -585,11 +580,6 @@ async function buildSlotGrid() {
         b.textContent=i; b.dataset.slot=i; g.appendChild(b);
     }
 }
-document.getElementById('slot-selection-grid').addEventListener('click', function(e) {
-    const b=e.target.closest('.slot-btn'); if(!b||b.classList.contains('taken')) return;
-    this.querySelectorAll('.slot-btn').forEach(x=>x.classList.remove('selected'));
-    b.classList.add('selected'); state.mySlot=parseInt(b.dataset.slot);
-});
 async function onEnterGame() {
     if (!sb) return showError('slot-select-error','Нет соединения');
     const name = document.getElementById('player-name').value.trim();
@@ -1451,12 +1441,22 @@ async function runTestMode() {
 }
 function wire() {
     document.getElementById('btn-create').addEventListener('click', onCreate);
+    document.getElementById('player-count-grid').addEventListener('click', function(e) {
+        const b = e.target.closest('.slot-btn'); if (!b) return;
+        this.querySelectorAll('.slot-btn').forEach(x=>x.classList.remove('selected'));
+        b.classList.add('selected'); state.playerCount = parseInt(b.dataset.count);
+    });
     document.getElementById('btn-join').addEventListener('click', onJoin);
     document.getElementById('btn-create-session').addEventListener('click', onCreateSession);
     document.getElementById('btn-back-from-host').addEventListener('click', ()=>showScreen('entry'));
     document.getElementById('btn-validate-code').addEventListener('click', onValidateCode);
     document.getElementById('btn-back-from-join').addEventListener('click', ()=>showScreen('entry'));
     document.getElementById('btn-enter-game').addEventListener('click', onEnterGame);
+    document.getElementById('slot-selection-grid').addEventListener('click', function(e) {
+        const b=e.target.closest('.slot-btn'); if(!b||b.classList.contains('taken')) return;
+        this.querySelectorAll('.slot-btn').forEach(x=>x.classList.remove('selected'));
+        b.classList.add('selected'); state.mySlot=parseInt(b.dataset.slot);
+    });
     document.getElementById('btn-back-from-slot').addEventListener('click', ()=>showScreen('player-join'));
     document.getElementById('btn-start-game').addEventListener('click', onStartGame);
     document.getElementById('btn-go-to-call').addEventListener('click', onGoToCall);
