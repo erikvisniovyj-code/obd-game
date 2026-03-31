@@ -150,8 +150,20 @@
         .revealed-chip.law { background:rgba(76,217,100,0.1); border:1px solid #27ae60; color:#4cd964; }
         .revealed-chip.sheriff { background:rgba(200,169,110,0.1); border:1px solid var(--gold); color:var(--gold); }
         /* Per-location result panel */
-        .loc-result-panel { background:#0d0d0d; border-top:1px solid #1e1e1e; padding:12px 14px; font-size:0.82rem; line-height:1.65; display:none; white-space:pre-line; }
-        .loc-result-panel .control-line { font-family:var(--font-display); font-size:1.05rem; letter-spacing:0.08em; margin-top:8px; }
+        .loc-result-panel { background:#0d0d0d; border-top:1px solid #1e1e1e; padding:12px 14px; display:none; }
+        .sc-section-head { font-family:var(--font-display); font-size:0.78rem; color:var(--gold); letter-spacing:0.1em; margin:10px 0 5px; }
+        .sc-section-head:first-child { margin-top:0; }
+        .sc-row { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:3px 0; }
+        .sc-name { font-size:0.8rem; color:rgba(255,255,255,0.8); flex:1; }
+        .sc-tag { font-size:0.7rem; font-family:var(--font-display); letter-spacing:0.05em; padding:2px 6px; border-radius:2px; white-space:nowrap; }
+        .sc-tag.ok { background:rgba(76,217,100,0.12); color:#4cd964; border:1px solid rgba(76,217,100,0.25); }
+        .sc-tag.warn { background:rgba(255,59,48,0.12); color:#ff6b6b; border:1px solid rgba(255,59,48,0.25); }
+        .sc-tag.neutral { background:rgba(200,169,110,0.1); color:var(--gold); border:1px solid rgba(200,169,110,0.2); }
+        .sc-bullet-move { font-size:0.75rem; color:#666; padding:2px 0 4px 12px; }
+        .sc-arrow { color:#555; }
+        .sc-plus { color:#4cd964; }
+        .sc-minus { color:#ff6b6b; text-decoration:line-through; }
+        .sc-control-line { font-family:var(--font-display); font-size:1rem; letter-spacing:0.08em; margin-top:10px; padding-top:8px; border-top:1px solid #1e1e1e; line-height:1.4; }
         /* Test mode */
         .test-btn { position:fixed; bottom:12px; right:12px; width:34px; height:34px; background:#0d0d0d; border:1px solid #1e1e1e; color:#333; font-size:0.65rem; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:500; border-radius:3px; font-family:monospace; }
         .test-btn:active { background:#1a1a1a; }
@@ -949,21 +961,36 @@ function buildVillaGrid(container) {
 }
 
 // ─── Revealed roles bar ─────────────────────────────────────
+// Shows Sheriff (always public) + players revealed in previous location checks
 function renderRevealedBar(barId) {
     const bar = document.getElementById(barId);
-    if (!bar || revealedRoles.length === 0) return;
-    bar.innerHTML = '<span style="font-size:0.68rem;color:#555;font-family:var(--font-display);letter-spacing:0.08em;margin-right:4px;">ВСКРЫТО:</span>';
+    if (!bar) return;
+    bar.innerHTML = '';
+
+    if (revealedRoles.length === 0) { bar.style.display = 'none'; return; }
+
+    const label = document.createElement('span');
+    label.style.cssText = 'font-size:0.65rem;color:#555;font-family:var(--font-display);letter-spacing:0.08em;margin-right:6px;white-space:nowrap;align-self:center;';
+    label.textContent = 'РОЛИ:';
+    bar.appendChild(label);
+
     revealedRoles.forEach(r => {
         const chip = document.createElement('div');
         chip.className = 'revealed-chip ' + (r.type === 'sheriff' ? 'sheriff' : r.type === 'law' ? 'law' : 'syndicate');
-        chip.textContent = `${r.slot}. ${r.name} — ${r.displayRole || r.role}`;
+        if (r.type === 'sheriff') {
+            chip.textContent = `${r.slot}. ${r.name} — ШЕРИФ`;
+        } else {
+            // Recruited/refused players: show as "ВЕРБОВКА: slot. name | result"
+            chip.textContent = `ВЕРБОВКА: ${r.slot}. ${r.name} | ${r.displayRole}`;
+        }
         bar.appendChild(chip);
     });
     bar.style.display = 'flex';
+    bar.style.alignItems = 'center';
+    bar.style.flexWrap = 'wrap';
 }
 
 // ─── Per-location check ─────────────────────────────────────
-// Pre-compute all recruited bandits (needed for arrest bribe logic)
 function getAllRecruitedBandits() {
     const set = new Set();
     for (let i = 1; i <= 4; i++) {
@@ -975,7 +1002,6 @@ function getAllRecruitedBandits() {
     return set;
 }
 
-// Global bribe counter — maintained as locations are checked
 let globalBribes = 0;
 let corruptFromLoc = null;
 
@@ -983,17 +1009,19 @@ function checkLocation(locId) {
     const loc = LOCATIONS.find(l => l.id === locId);
     const players = state.players;
     const panel = document.getElementById(`loc${locId}-result-panel`);
-    const lines = [];
     const recruitedBandits = getAllRecruitedBandits();
 
     let mafia = sc[locId].mafia;
     let agent = sc[locId].agent;
     const raids = sc[locId].raids;
 
-    // ── Arrests → bribes ──
+    // Build result HTML instead of plain text for better visuals
+    let html = '';
+
+    // ── Arrests ──
     const arrestEntries = Object.entries(sc[locId].arrested).filter(([,c]) => c > 0);
     if (arrestEntries.length > 0) {
-        lines.push('АРЕСТЫ:');
+        html += `<div class="sc-section-head">АРЕСТЫ</div>`;
         arrestEntries.forEach(([slotStr, count]) => {
             const slot = parseInt(slotStr);
             const p = players.find(p => p.slot === slot);
@@ -1002,70 +1030,88 @@ function checkLocation(locId) {
             const wrongCount = agentSide ? count : 0;
             globalBribes += wrongCount;
             if (wrongCount > 0 && corruptFromLoc === null && globalBribes >= 5) corruptFromLoc = locId;
-            const verdict = agentSide
-                ? `${count}x ошибочный арест → +${wrongCount} взяток Шерифу`
-                : `${count}x — законный арест`;
-            lines.push(`  ${slot}. ${p.name} (${p.role}): ${verdict}`);
+
+            if (agentSide) {
+                html += `<div class="sc-row"><span class="sc-name">${slot}. ${p.name} (${p.role})</span>`;
+                html += `<span class="sc-tag warn">${count}x ОШИБОЧНЫЙ → +${wrongCount} взяток Шерифу</span></div>`;
+            } else {
+                html += `<div class="sc-row"><span class="sc-name">${slot}. ${p.name} (${p.role})</span>`;
+                html += `<span class="sc-tag ok">ЗАКОННЫЙ x${count}</span></div>`;
+            }
         });
+        if (globalBribes > 0) {
+            const suffix = globalBribes >= 5
+                ? `<span class="sc-tag warn">ПРОДАЖНЫЙ с лок. ${corruptFromLoc}</span>`
+                : `<span class="sc-tag neutral">Взяток: ${globalBribes}/5</span>`;
+            html += `<div class="sc-row"><span class="sc-name">Шериф</span>${suffix}</div>`;
+        }
     }
 
     // ── Recruitments ──
     if (sc[locId].recruited.size > 0) {
-        lines.push('ВЕРБОВКИ:');
+        html += `<div class="sc-section-head">ВЕРБОВКИ</div>`;
         sc[locId].recruited.forEach(slot => {
             const p = players.find(p => p.slot === slot);
             if (!p) return;
             if (p.role === 'БАНДИТ') {
+                // Bullet: from recruitment zone → Agent base
                 agent++;
-                lines.push(`  ${slot}. ${p.name} — БАНДИТ принял вербовку. +1 гильза Агенту`);
-                // Add to revealed if not already there
+                html += `<div class="sc-row">
+                    <span class="sc-name">${slot}. ${p.name} (${p.role})</span>
+                    <span class="sc-tag ok">ПРИНЯЛ</span>
+                </div>`;
+                html += `<div class="sc-bullet-move">Гильза из зоны вербовки <span class="sc-arrow">→</span> <span class="sc-plus">+1 база Агента</span></div>`;
                 if (!revealedRoles.find(r => r.slot === slot)) {
-                    revealedRoles.push({ slot, name:p.name, role:p.role, displayRole:'БАНДИТ → АГЕНТ', type:'law' });
+                    revealedRoles.push({ slot, name:p.name, role:p.role, displayRole:'БАНДИТ — принял (теперь Агент)', type:'law' });
                 }
             } else {
-                lines.push(`  ${slot}. ${p.name} — ${p.role} отказался. Гильза убрана`);
+                // Bullet: removed from recruitment zone (not from anyone's base)
+                html += `<div class="sc-row">
+                    <span class="sc-name">${slot}. ${p.name} (${p.role})</span>
+                    <span class="sc-tag warn">ОТКАЗ</span>
+                </div>`;
+                html += `<div class="sc-bullet-move">Гильза из зоны вербовки <span class="sc-arrow">→</span> <span class="sc-minus">убрана из игры</span></div>`;
                 if (!revealedRoles.find(r => r.slot === slot)) {
-                    revealedRoles.push({ slot, name:p.name, role:p.role, displayRole:p.role + ' (отказ)', type:'syndicate' });
+                    revealedRoles.push({ slot, name:p.name, role:p.role, displayRole:`${p.role} — отказался`, type:'syndicate' });
                 }
             }
         });
     }
 
-    // ── Corrupt sheriff effect ──
-    const isCorruptHere = corruptFromLoc !== null && corruptFromLoc <= locId;
+    // ── Raids / Corrupt sheriff ──
     if (raids > 0) {
+        html += `<div class="sc-section-head">ОБЛАВЫ (${raids})</div>`;
+        const isCorruptHere = corruptFromLoc !== null && corruptFromLoc <= locId;
         if (isCorruptHere) {
-            const bonus = raids * loc.mafiaMin;
-            mafia += raids + bonus;
+            const perRaid = 1 + loc.mafiaMin;
+            mafia += raids * perRaid;
             agent = Math.max(0, agent - loc.mafiaMin);
-            lines.push(`ОБЛАВЫ (${raids}): Шериф ПРОДАЖНЫЙ — каждая облава +${1+loc.mafiaMin} Мафии, Агент -${loc.mafiaMin}`);
+            html += `<div class="sc-row"><span class="sc-name">Шериф ПРОДАЖНЫЙ</span><span class="sc-tag warn">x${raids} облавы</span></div>`;
+            html += `<div class="sc-bullet-move"><span class="sc-plus">+${raids * perRaid} Синдикат</span> &nbsp; <span class="sc-minus">-${loc.mafiaMin} Агент</span></div>`;
         } else {
-            lines.push(`ОБЛАВЫ (${raids}): Шериф честный — гильзы на счёт облав`);
+            html += `<div class="sc-row"><span class="sc-name">Шериф честный</span><span class="sc-tag ok">x${raids} облавы учтены</span></div>`;
         }
     }
 
-    if (globalBribes > 0 && corruptFromLoc === null) {
-        lines.push(`Взяток Шерифа накоплено: ${globalBribes} из 5`);
-    } else if (corruptFromLoc !== null) {
-        lines.push(`Шериф ПРОДАЖНЫЙ с локации ${corruptFromLoc} (взяток: ${globalBribes})`);
+    // ── Control ──
+    let ctrl, ctrlColor, ctrlNote;
+    if (mafia > agent) {
+        ctrl = 'СИНДИКАТ'; ctrlColor = '#e05050';
+        ctrlNote = `${mafia} гильз vs ${agent}`;
+    } else if (agent > mafia) {
+        ctrl = 'АГЕНТ / ЗАКОН'; ctrlColor = '#4cd964';
+        ctrlNote = `${agent} гильз vs ${mafia}`;
+    } else {
+        ctrl = 'НЕ КОНТРОЛИРУЕТСЯ'; ctrlColor = '#888';
+        ctrlNote = `${mafia} гильз — ничья, контроль не присвоен`;
     }
 
-    // ── Control ──
-    let ctrl, ctrlColor;
-    if (mafia > agent)       { ctrl = 'СИНДИКАТ';     ctrlColor = '#e05050'; }
-    else if (agent > mafia)  { ctrl = 'АГЕНТ / ЗАКОН'; ctrlColor = '#4cd964'; }
-    else                     { ctrl = 'НИЧЬЯ';          ctrlColor = '#c8a96e'; }
+    html += `<div class="sc-control-line" style="color:${ctrlColor}">КОНТРОЛЬ: ${ctrl}<br><span style="font-size:0.78rem;font-family:var(--font-body);font-weight:normal;">${ctrlNote}</span></div>`;
 
     panel.style.display = 'block';
-    panel.style.color = 'rgba(255,255,255,0.75)';
-    panel.textContent = lines.join('\n');
-    const ctrlLine = document.createElement('div');
-    ctrlLine.className = 'control-line';
-    ctrlLine.style.color = ctrlColor;
-    ctrlLine.textContent = `Контроль: ${ctrl} (Синдикат ${mafia} / Агент ${agent})`;
-    panel.appendChild(ctrlLine);
+    panel.innerHTML = html;
 
-    // Update revealed bars for subsequent locations
+    // Update revealed bars for all subsequent locations
     for (let next = locId + 1; next <= 5; next++) {
         renderRevealedBar(`revealed-bar-${next}`);
     }
@@ -1094,19 +1140,19 @@ function buildScoringUI() {
                 <div id="revealed-bar-${loc.id}" class="revealed-bar" style="display:none;"></div>
                 <div class="loc-body">
                   <div>
-                    <div class="loc-section-label">ГИЛЬЗЫ СИНДИКАТА</div>
+                    <div class="loc-section-label">ГИЛЬЗЫ СИНДИКАТА НА БАЗЕ</div>
                     <div class="bullet-row" id="loc${loc.id}-mafia-row"></div>
                   </div>
                   <div>
-                    <div class="loc-section-label">ГИЛЬЗЫ АГЕНТА</div>
+                    <div class="loc-section-label">ГИЛЬЗЫ АГЕНТА НА БАЗЕ</div>
                     <div class="bullet-row" id="loc${loc.id}-agent-row"></div>
                   </div>
                   <div>
-                    <div class="loc-section-label">ОБЛАВЫ ШЕРИФА (ИСПОЛЬЗОВАННЫЕ)</div>
+                    <div class="loc-section-label">ОБЛАВЫ ШЕРИФА — ИСПОЛЬЗОВАННЫЕ</div>
                     <div class="raid-row" id="loc${loc.id}-raid-row"></div>
                   </div>
                   <div>
-                    <div class="loc-section-label">КТО БЫЛ АРЕСТОВАН — ТАП ДЛЯ СЧЁТЧИКА (ДО 3 РАЗ)</div>
+                    <div class="loc-section-label">КТО БЫЛ АРЕСТОВАН — ТАП = +1 АРЕСТ (ДО 3 РАЗ)</div>
                     <div class="tap-grid" id="loc${loc.id}-arrest-grid"></div>
                   </div>
                   <div>
@@ -1125,7 +1171,7 @@ function buildScoringUI() {
                 <div id="revealed-bar-5" class="revealed-bar" style="display:none;"></div>
                 <div class="loc-body">
                   <div style="font-size:0.79rem;color:#666;line-height:1.55;">
-                    Выбери трёх игроков попавших на виллу после перестрелки пальцем. Каждый приносит 2 гильзы своей команде.
+                    Выбери трёх игроков попавших на виллу. Каждый приносит своей команде ровно 2 гильзы — больше ничего.
                   </div>
                   <div>
                     <div class="loc-section-label">КТО ПОПАЛ НА ВИЛЛУ (ВЫБЕРИ 3)</div>
@@ -1138,7 +1184,6 @@ function buildScoringUI() {
         }
         cont.appendChild(block);
 
-        // Wire up components
         if (!loc.isVilla) {
             buildBulletRow(document.getElementById(`loc${loc.id}-mafia-row`), loc.available, 'mafia', loc.id);
             buildBulletRow(document.getElementById(`loc${loc.id}-agent-row`), loc.available, 'agent', loc.id);
@@ -1152,7 +1197,7 @@ function buildScoringUI() {
         }
     });
 
-    // Location 1 revealed bar shows Sheriff from the start
+    // Location 1 revealed bar: show Sheriff from the start
     renderRevealedBar('revealed-bar-1');
 }
 
@@ -1160,127 +1205,193 @@ function checkVilla() {
     const players = state.players;
     const recruitedBandits = getAllRecruitedBandits();
     const panel = document.getElementById('loc5-result-panel');
-    const lines = ['ВИЛЛА ДОНА — РЕЗУЛЬТАТ:'];
     let mafia = 0, agent = 0;
+    let html = `<div class="sc-section-head">ВИЛЛА ДОНА — 3 гостя × 2 гильзы</div>`;
+
+    if (sc[5].villa.size === 0) {
+        html += `<div class="sc-row"><span class="sc-name" style="color:#555;">Никто не выбран</span></div>`;
+    }
 
     sc[5].villa.forEach(slot => {
         const p = players.find(p => p.slot === slot);
         if (!p) return;
+        // Agent's side: АГЕНТ, ШЕРИФ, recruited БАНДИТ
         const agentSide = p.role === 'АГЕНТ' || p.role === 'ШЕРИФ' || (p.role === 'БАНДИТ' && recruitedBandits.has(slot));
-        if (agentSide) { agent += 2; lines.push(`  ${slot}. ${p.name} (${p.role}): +2 Агенту`); }
-        else           { mafia += 2; lines.push(`  ${slot}. ${p.name} (${p.role}): +2 Синдикату`); }
+        if (agentSide) {
+            agent += 2;
+            html += `<div class="sc-row"><span class="sc-name">${slot}. ${p.name} (${p.role})</span><span class="sc-plus">+2 Агент</span></div>`;
+        } else {
+            mafia += 2;
+            html += `<div class="sc-row"><span class="sc-name">${slot}. ${p.name} (${p.role})</span><span class="sc-plus" style="color:#e05050;">+2 Синдикат</span></div>`;
+        }
     });
 
-    if (sc[5].villa.size < 3) lines.push('  (выбрано менее 3 игроков)');
+    if (sc[5].villa.size < 3) {
+        html += `<div style="font-size:0.75rem;color:#c8a96e;margin-top:4px;">Выбрано ${sc[5].villa.size} из 3 — добавь остальных</div>`;
+    }
 
-    let ctrl, ctrlColor;
-    if (mafia > agent)       { ctrl = 'СИНДИКАТ';     ctrlColor = '#e05050'; }
-    else if (agent > mafia)  { ctrl = 'АГЕНТ / ЗАКОН'; ctrlColor = '#4cd964'; }
-    else                     { ctrl = 'НИЧЬЯ';          ctrlColor = '#c8a96e'; }
+    let ctrl, ctrlColor, ctrlNote;
+    if (mafia > agent)      { ctrl = 'СИНДИКАТ';     ctrlColor='#e05050'; ctrlNote=`${mafia} vs ${agent}`; }
+    else if (agent > mafia) { ctrl = 'АГЕНТ / ЗАКОН'; ctrlColor='#4cd964'; ctrlNote=`${agent} vs ${mafia}`; }
+    else                    { ctrl = 'НЕ КОНТРОЛИРУЕТСЯ'; ctrlColor='#888'; ctrlNote=`${mafia} vs ${agent}`; }
+
+    html += `<div class="sc-control-line" style="color:${ctrlColor}">КОНТРОЛЬ: ${ctrl}<br><span style="font-size:0.78rem;font-family:var(--font-body);font-weight:normal;">${ctrlNote}</span></div>`;
 
     panel.style.display = 'block';
-    panel.style.color = 'rgba(255,255,255,0.75)';
-    panel.textContent = lines.join('\n');
-    const ctrlLine = document.createElement('div');
-    ctrlLine.className = 'control-line';
-    ctrlLine.style.color = ctrlColor;
-    ctrlLine.textContent = `Контроль Виллы: ${ctrl} (Синдикат ${mafia} / Агент ${agent})`;
-    panel.appendChild(ctrlLine);
-
+    panel.innerHTML = html;
     sc[5]._mafia = mafia;
     sc[5]._agent = agent;
 }
 
-// ─── Final calculation ───────────────────────────────────────
+// ─── Final calculation with visual scorecard ─────────────────
 function calcScoring() {
     const players = state.players;
     const recruitedBandits = getAllRecruitedBandits();
     let mafiaCtrl = 0, agentCtrl = 0;
-    const lines = [];
 
-    // Process locations 1-4
+    // Collect per-location final totals
+    const locSummary = [];
+
     for (let locId = 1; locId <= 4; locId++) {
         const loc = LOCATIONS.find(l => l.id === locId);
         let mafia = sc[locId].mafia;
         let agent = sc[locId].agent;
         const raids = sc[locId].raids;
 
-        // Apply recruitments
         sc[locId].recruited.forEach(slot => {
             const p = players.find(p => p.slot === slot);
             if (p && p.role === 'БАНДИТ') agent++;
         });
 
-        // Apply corrupt sheriff
         const isCorruptHere = corruptFromLoc !== null && corruptFromLoc <= locId;
         if (isCorruptHere && raids > 0) {
             mafia += raids + (raids * loc.mafiaMin);
             agent = Math.max(0, agent - loc.mafiaMin);
         }
 
-        if (mafia > agent)      { mafiaCtrl++; lines.push(`${locId}. ${loc.name}: СИНДИКАТ (${mafia}/${agent})`); }
-        else if (agent > mafia) { agentCtrl++; lines.push(`${locId}. ${loc.name}: АГЕНТ (${agent}/${mafia})`); }
-        else                    { lines.push(`${locId}. ${loc.name}: НИЧЬЯ (${mafia}/${agent}) — локация не контролируется`); }
+        let ctrl, color;
+        if (mafia > agent)      { ctrl = 'СИНДИКАТ'; color = '#e05050'; mafiaCtrl++; }
+        else if (agent > mafia) { ctrl = 'АГЕНТ'; color = '#4cd964'; agentCtrl++; }
+        else                    { ctrl = 'НЕЙТРАЛЬНО'; color = '#555'; }
+
+        locSummary.push({ id:locId, name:loc.name, mafia, agent, ctrl, color });
     }
 
     // Villa
-    const vMafia = sc[5]._mafia || 0, vAgent = sc[5]._agent || 0;
-    if (vMafia > vAgent)       { mafiaCtrl++; lines.push(`5. Вилла Дона: СИНДИКАТ (${vMafia}/${vAgent})`); }
-    else if (vAgent > vMafia)  { agentCtrl++; lines.push(`5. Вилла Дона: АГЕНТ (${vAgent}/${vMafia})`); }
-    else                       { lines.push(`5. Вилла Дона: НИЧЬЯ (${vMafia}/${vAgent})`); }
+    const vM = sc[5]._mafia || 0, vA = sc[5]._agent || 0;
+    let vCtrl, vColor;
+    if (vM > vA)      { vCtrl = 'СИНДИКАТ'; vColor = '#e05050'; mafiaCtrl++; }
+    else if (vA > vM) { vCtrl = 'АГЕНТ'; vColor = '#4cd964'; agentCtrl++; }
+    else              { vCtrl = 'НЕЙТРАЛЬНО'; vColor = '#555'; }
+    locSummary.push({ id:5, name:'ВИЛЛА ДОНА', mafia:vM, agent:vA, ctrl:vCtrl, color:vColor });
 
-    // Determine winner — per rulebook 2:2 Villa resolves, otherwise most guilzas total
-    let winnerTitle, winnerText;
+    // Build visual scorecard HTML
+    let scoreHTML = '';
+    locSummary.forEach(l => {
+        const mIcon = l.mafia > l.agent ? '[ S ]' : '';
+        const aIcon = l.agent > l.mafia ? '[ A ]' : '';
+        scoreHTML += `
+        <div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #1a1a1a;gap:8px;">
+            <div style="font-family:var(--font-display);font-size:0.85rem;color:#888;width:16px;flex-shrink:0;">${l.id}.</div>
+            <div style="font-family:var(--font-display);font-size:0.85rem;color:#ccc;flex:1;">${l.name}</div>
+            <div style="font-size:0.75rem;color:#e05050;width:28px;text-align:center;">${l.mafia}</div>
+            <div style="font-size:0.65rem;color:#444;">vs</div>
+            <div style="font-size:0.75rem;color:#4cd964;width:28px;text-align:center;">${l.agent}</div>
+            <div style="font-family:var(--font-display);font-size:0.78rem;color:${l.color};min-width:72px;text-align:right;">${l.ctrl}</div>
+        </div>`;
+    });
+
+    // Header row for scorecard
+    const scorecardHTML = `
+        <div style="padding:10px 14px;background:#111;border-radius:2px;margin-bottom:10px;">
+            <div style="display:flex;padding-bottom:6px;border-bottom:1px solid #2a2a2a;gap:8px;margin-bottom:4px;">
+                <div style="width:16px;flex-shrink:0;"></div>
+                <div style="flex:1;font-size:0.65rem;color:#555;letter-spacing:0.08em;font-family:var(--font-display);">ЛОКАЦИЯ</div>
+                <div style="width:28px;text-align:center;font-size:0.65rem;color:#e05050;letter-spacing:0.05em;font-family:var(--font-display);">СИН</div>
+                <div style="width:14px;"></div>
+                <div style="width:28px;text-align:center;font-size:0.65rem;color:#4cd964;letter-spacing:0.05em;font-family:var(--font-display);">АГЕ</div>
+                <div style="min-width:72px;text-align:right;font-size:0.65rem;color:#555;letter-spacing:0.05em;font-family:var(--font-display);">КОНТРОЛЬ</div>
+            </div>
+            ${scoreHTML}
+            <div style="display:flex;justify-content:space-between;padding-top:8px;margin-top:4px;border-top:1px solid #2a2a2a;">
+                <div style="font-family:var(--font-display);font-size:0.8rem;color:#e05050;">СИНДИКАТ: ${mafiaCtrl} лок.</div>
+                <div style="font-family:var(--font-display);font-size:0.8rem;color:#4cd964;">АГЕНТ: ${agentCtrl} лок.</div>
+            </div>
+        </div>`;
+
+    // Determine winner
+    let winnerTitle, winnerText, winnerColor;
     if (mafiaCtrl >= 3) {
         winnerTitle = 'ПОБЕДА СИНДИКАТА';
-        winnerText = `Синдикат контролирует ${mafiaCtrl} из 5 локаций. Операция Чёрный Одуванчик провалилась.`;
+        winnerText = `Синдикат захватил ${mafiaCtrl} из 5 локаций.\nОперация Чёрный Одуванчик провалилась.`;
+        winnerColor = '#e05050';
     } else if (agentCtrl >= 3) {
         winnerTitle = 'ПОБЕДА АГЕНТА И ЗАКОНА';
-        winnerText = `Агент и Шериф контролируют ${agentCtrl} из 5 локаций. Синдикат разгромлен.`;
+        winnerText = `Закон контролирует ${agentCtrl} из 5 локаций. Синдикат разгромлен.`;
+        winnerColor = '#4cd964';
     } else if (mafiaCtrl === 2 && agentCtrl === 2) {
-        // Tiebreak: Villa — per rulebook "При ничье 2:2 Вилла решает"
-        if (vMafia > vAgent) {
-            winnerTitle = 'ПОБЕДА СИНДИКАТА (тайбрейк — Вилла)';
-            winnerText = `Счёт 2:2. На Вилле Дона больше гильз у Синдиката (${vMafia} vs ${vAgent}).`;
-        } else if (vAgent > vMafia) {
-            winnerTitle = 'ПОБЕДА АГЕНТА И ЗАКОНА (тайбрейк — Вилла)';
-            winnerText = `Счёт 2:2. На Вилле Дона больше гильз у Агента (${vAgent} vs ${vMafia}).`;
+        // Tiebreak via Villa (rulebook: "При ничье 2:2 Вилла решает")
+        if (vM > vA) {
+            winnerTitle = 'ПОБЕДА СИНДИКАТА';
+            winnerText = `Счёт 2:2. Тайбрейк — Вилла Дона решила в пользу Синдиката (${vM} vs ${vA}).`;
+            winnerColor = '#e05050';
+        } else if (vA > vM) {
+            winnerTitle = 'ПОБЕДА АГЕНТА И ЗАКОНА';
+            winnerText = `Счёт 2:2. Тайбрейк — Вилла Дона решила в пользу Агента (${vA} vs ${vM}).`;
+            winnerColor = '#4cd964';
         } else {
-            // Per rules Villa must resolve — most total guilzas across all locations
-            winnerTitle = 'ПОБЕДА ПО ОБЩЕМУ КОЛИЧЕСТВУ ГИЛЬЗ';
-            const totalM = [1,2,3,4].reduce((s,i)=>s+sc[i].mafia,0) + vMafia;
-            const totalA = [1,2,3,4].reduce((s,i)=>s+sc[i].agent,0) + vAgent;
-            winnerText = totalM > totalA
-                ? `Полная ничья по локациям и Вилле. Синдикат победил по общему кол-ву гильз (${totalM} vs ${totalA}).`
-                : totalA > totalM
-                ? `Полная ничья по локациям и Вилле. Агент победил по общему кол-ву гильз (${totalA} vs ${totalM}).`
-                : 'Абсолютная ничья — переиграть.';
+            // Villa also tied — total bullets decide
+            const tM = locSummary.reduce((s,l) => s + l.mafia, 0);
+            const tA = locSummary.reduce((s,l) => s + l.agent, 0);
+            if (tM > tA) {
+                winnerTitle = 'ПОБЕДА СИНДИКАТА'; winnerColor = '#e05050';
+                winnerText = `Тайбрейк по гильзам: Синдикат ${tM} / Агент ${tA}.`;
+            } else if (tA > tM) {
+                winnerTitle = 'ПОБЕДА АГЕНТА'; winnerColor = '#4cd964';
+                winnerText = `Тайбрейк по гильзам: Агент ${tA} / Синдикат ${tM}.`;
+            } else {
+                winnerTitle = 'АБСОЛЮТНАЯ НИЧЬЯ'; winnerColor = '#c8a96e';
+                winnerText = 'Полностью равный счёт — переиграть фазу Виллы.';
+            }
         }
     } else {
-        winnerTitle = 'НЕРЕШЁННЫЙ ИТОГ';
-        winnerText = `Синдикат: ${mafiaCtrl} лок. / Агент: ${agentCtrl} лок. Никто не набрал 3.`;
+        winnerTitle = 'НЕТ ПОБЕДИТЕЛЯ'; winnerColor = '#888';
+        winnerText = `Синдикат: ${mafiaCtrl} / Агент: ${agentCtrl}. Никто не набрал 3 локации.`;
     }
 
     // Corrupt summary
     const corruptBox = document.getElementById('sc-corrupt-info');
     if (globalBribes >= 5) {
         corruptBox.style.display = 'block';
+        corruptBox.style.borderLeftColor = '#ff3b30';
         document.getElementById('sc-corrupt-text').textContent =
-            `Шериф стал ПРОДАЖНЫМ с локации ${corruptFromLoc} (взяток: ${globalBribes}).\nВсе облавы начиная с локации ${corruptFromLoc} засчитаны Мафии.`;
+            `Шериф стал ПРОДАЖНЫМ начиная с локации ${corruptFromLoc} (взяток: ${globalBribes}).\nВсе облавы с локации ${corruptFromLoc} засчитаны Мафии.`;
+    } else if (globalBribes > 0) {
+        corruptBox.style.display = 'block';
+        corruptBox.style.borderLeftColor = '#c8a96e';
+        document.getElementById('sc-corrupt-text').textContent = `Шериф получил ${globalBribes} взяток — до продажного не дотянул (нужно 5).`;
     } else {
-        corruptBox.style.display = globalBribes > 0 ? 'block' : 'none';
-        if (globalBribes > 0) {
-            corruptBox.style.borderLeftColor = '#c8a96e';
-            document.getElementById('sc-corrupt-text').textContent = `Шериф получил ${globalBribes} взяток — до продажного не дотянул (нужно 5).`;
-        }
+        corruptBox.style.display = 'none';
     }
 
-    document.getElementById('sc-result-text').textContent = lines.join('\n');
+    document.getElementById('sc-result-text').innerHTML = scorecardHTML;
     document.getElementById('sc-winner-title').textContent = winnerTitle;
+    document.getElementById('sc-winner-title').style.color = winnerColor;
     document.getElementById('sc-winner-text').textContent = winnerText;
     document.getElementById('sc-result-box').style.display = 'block';
     document.getElementById('btn-finish-game').style.display = 'flex';
     document.getElementById('sc-result-box').scrollIntoView({ behavior:'smooth' });
+}
+    const bar = document.getElementById(barId);
+    if (!bar || revealedRoles.length === 0) return;
+    bar.innerHTML = '<span style="font-size:0.68rem;color:#555;font-family:var(--font-display);letter-spacing:0.08em;margin-right:4px;">ВСКРЫТО:</span>';
+    revealedRoles.forEach(r => {
+        const chip = document.createElement('div');
+        chip.className = 'revealed-chip ' + (r.type === 'sheriff' ? 'sheriff' : r.type === 'law' ? 'law' : 'syndicate');
+        chip.textContent = `${r.slot}. ${r.name} — ${r.displayRole || r.role}`;
+        bar.appendChild(chip);
+    });
+    bar.style.display = 'flex';
 }
 
 async function finishGame() {
@@ -1291,6 +1402,7 @@ async function finishGame() {
     Object.assign(state, { sessionId:null, playerCount:0, mySlot:null, myName:'', myRole:'', players:[], rolesJson:[] });
     showScreen('entry');
 }
+
 
 // ============================================================
 // TEST MODE — auto-fill players for quick testing
